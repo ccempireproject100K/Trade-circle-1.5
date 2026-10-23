@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { api, label, shortDate, uploadPhoto } from "../api.js";
 import { CATEGORY_NAMES, EXPERIENCE_NAMES, KIND_NAMES, REPORT_REASONS } from "../labels.js";
 import { Notice } from "./Form.jsx";
+import { YouTubeClipPanel } from "./YouTube.jsx";
 
 export function Author({ author, when }) {
   return (
@@ -121,6 +122,7 @@ function ClipEditor({ clip, onReplace, onClose }) {
       <p className="small" style={{ margin: 0 }}>
         Watch it through. If it shows faces, house numbers, street signs, plates or anything private, trim that part out or remove the clip. Blurring isn't available yet.
       </p>
+      <YouTubeClipPanel clip={clip} />
       <div className="grid-2">
         <label className="field"><span className="field-label">Start at (seconds)</span><input inputMode="decimal" value={start} onChange={(e) => setStart(e.target.value)} /></label>
         <label className="field"><span className="field-label">End at (seconds)</span><input inputMode="decimal" value={end} onChange={(e) => setEnd(e.target.value)} /></label>

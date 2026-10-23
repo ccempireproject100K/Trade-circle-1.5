@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { api, localToday, shortDate } from "../api.js";
 import { useAuth } from "../auth.jsx";
 import { Field, Notice } from "../components/Form.jsx";
+import { YouTubeConnect } from "../components/YouTube.jsx";
 
 function Alerts() {
   const [alerts, setAlerts] = useState(null);
@@ -220,6 +221,7 @@ function Password() {
 export default function Settings() {
   const { user, logout, setUser } = useAuth();
   const navigate = useNavigate();
+  const youtubeNotice = new URLSearchParams(window.location.search).get("youtube") || "";
 
   const signOutEverywhere = async () => {
     if (!window.confirm("Sign out on every phone and computer?")) return;
@@ -237,6 +239,7 @@ export default function Settings() {
         <Link className="btn btn-small" to="/plan">Plans and billing</Link>
       </section>
       <Alerts />
+      <YouTubeConnect notice={youtubeNotice} />
       <Vacation />
       <Password />
       <section className="card row">
