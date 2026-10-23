@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Request removal · Trade Circle{% endblock %}
+{% block head %}<meta name="robots" content="noindex"><script src="/static/removal.js" defer></script>{% endblock %}
+{% block body %}
+<main class="page">
+  <section class="card">
+    <h1>Request removal of a directory listing</h1>
+    <p>You're asking us to remove <strong>{{ name }}</strong> from the Trade Circle supplier directory.</p>
+    <p class="muted">Only the business or someone authorized to act for it can request this. A moderator will contact you to confirm before anything is removed. Once confirmed, the listing and the business's name, website, address and photos are removed. Members' posts about their own experiences stay on Trade Circle with the business's details replaced by "Supplier details removed".</p>
+    <form class="quote-form removal-form" data-supplier="{{ supplier_id }}" novalidate>
+      <label>Your name<input name="requester_name" autocomplete="name" required maxlength="120"></label>
+      <label>Your role at the business<input name="requester_role" required maxlength="120" placeholder="Owner, manager, attorney…"></label>
+      <label>Work email<input name="email" type="email" autocomplete="email" required></label>
+      <label>Phone (optional)<input name="phone" type="tel" autocomplete="tel" maxlength="40"></label>
+      <label>Anything we should know (optional)<textarea name="message" rows="4" maxlength="2000"></textarea></label>
+      <p class="form-note">An email at the business's own website domain helps us confirm faster.</p>
+      <button class="btn btn-primary" type="submit">Send request</button>
+      <p class="form-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+</main>
+{% endblock %}

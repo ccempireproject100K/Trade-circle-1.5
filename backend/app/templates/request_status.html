@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{% if missing %}Job request{% else %}{{ r.title }} · your bids{% endif %}{% endblock %}
+{% block meta %}<meta name="robots" content="noindex">{% endblock %}
+{% block body %}
+<main class="page" style="--brand: #1F4E79; --brand-text: #ffffff">
+{% if missing %}
+  <section class="card"><h1>Request not found</h1><p>Check the link in your email, or <a href="/request">post a new job</a>.</p></section>
+{% else %}
+  <header class="hero">
+    <p class="pay-to">Your job request</p>
+    <h1>{{ r.title }}</h1>
+    <p class="tagline">{{ trade_label }} · {{ r.location.label }}{% if r.wanted_on %} · wanted {{ r.wanted_on }}{% elif r.flexible %} · flexible timing{% endif %}</p>
+  </header>
+  {% if new %}<p class="notice notice-ok" role="status">Your job is posted. Bookmark this page: it's your private link to the bids. We've emailed it to you too.</p>{% endif %}
+  {% if not open %}<p class="notice">This request is closed to new bids.</p>{% endif %}
+  <section class="card">
+    <h2>Bids ({{ bids|length }})</h2>
+    {% if not bids %}<p class="muted">No bids yet. Contractors near you will see your job for 14 days.</p>{% endif %}
+    <ul class="list">
+    {% for b in bids %}
+      {% set p = profiles.get(b.contractor_id, {}) %}
+      <li class="bid">
+        <strong>{% if p.slug %}<a href="/p/{{ p.slug }}" target="_blank" rel="noopener">{{ p.business_name }}</a>{% else %}A contractor{% endif %}</strong>
+        {% if b.price_low_cents is not none or b.price_high_cents is not none %}
+          <span> · {% if b.price_low_cents is not none %}${{ '{:,.0f}'.format(b.price_low_cents / 100) }}{% endif %}{% if b.price_high_cents is not none and b.price_high_cents != b.price_low_cents %}{% if b.price_low_cents is not none %}–{% endif %}${{ '{:,.0f}'.format(b.price_high_cents / 100) }}{% endif %} estimate</span>
+        {% endif %}
+        {% if b.available_on %}<span class="muted"> · can start {{ b.available_on }}</span>{% endif %}
+        <p class="prose">{{ b.message }}</p>
+        {% if b.status == "chosen" %}
+          <p class="notice notice-ok">You chose {{ p.business_name }}. They have your contact details and will be in touch.{% if phones.get(b._id) %} You can also call them: <a href="tel:{{ phones.get(b._id) }}">{{ phones.get(b._id) }}</a>.{% endif %}</p>
+        {% elif open %}
+          <form method="post" action="/request/{{ r.token }}/choose/{{ b._id }}"><button class="btn btn-primary" type="submit">Choose {{ p.business_name or "this contractor" }}</button></form>
+        {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+  </section>
+  <section class="card">
+    <h2>Your job</h2>
+    <p class="prose">{{ r.details }}</p>
+    {% if r.budget %}<p>Budget: {{ r.budget }}</p>{% endif %}
+    {% if r.photos %}<div class="photos">{% for ph in r.photos %}<a href="{{ ph.image_url }}"><img src="{{ ph.thumb_url }}" alt="Job photo" loading="lazy"></a>{% endfor %}</div>{% endif %}
+    {% if open %}<form method="post" action="/request/{{ r.token }}/close"><button class="btn" type="submit">Close this request</button></form>{% endif %}
+  </section>
+  <p class="form-note">Your contact details go only to contractors you choose. Contractors in the marketplace see the job description, area, date, budget and photos.</p>
+{% endif %}
+</main>
+{% endblock %}

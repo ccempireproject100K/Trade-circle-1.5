@@ -1,0 +1,64 @@
+{# Shared pieces of the landing page and the full profile. #}
+
+{% macro meta(p, trade_label, structured_data) %}
+  {% set description = p.tagline or (trade_label ~ " in " ~ p.city) %}
+  <meta name="description" content="{{ description }}">
+  <meta property="og:title" content="{{ p.business_name }}">
+  <meta property="og:description" content="{{ description }}">
+  {% if structured_data.image %}<meta property="og:image" content="{{ structured_data.image }}">{% endif %}
+  <script type="application/ld+json">{{ structured_data | tojson }}</script>
+{% endmacro %}
+
+{% macro hero(p, trade_label, brand, brand_text) %}
+  {% for c in p.celebrations %}
+    <div class="celebration" role="status">🎉 {{ c.label }}</div>
+  {% endfor %}
+  <header class="hero" style="--brand: {{ brand }}; --brand-text: {{ brand_text }};">
+    <h1>{{ p.business_name }}</h1>
+    <p class="trade">{{ trade_label }} · {{ p.city }}</p>
+    {% if p.tagline %}<p class="tagline">{{ p.tagline }}</p>{% endif %}
+  </header>
+  <ul class="badges">
+    {% for b in p.badges %}
+      <li class="badge badge-{{ b.type }}">{{ b.label }}</li>
+    {% endfor %}
+  </ul>
+  <nav class="actions" style="--brand: {{ brand }}; --brand-text: {{ brand_text }};">
+    {% if p.call.tel %}<a class="btn btn-primary" href="{{ p.call.tel }}">Call</a>{% endif %}
+    {% if p.call.facetime %}<a class="btn" href="{{ p.call.facetime }}" data-apple-only hidden>FaceTime</a>{% endif %}
+    <a class="btn {% if not p.call.tel %}btn-primary{% endif %}" href="#quote">Get a quote</a>
+  </nav>
+{% endmacro %}
+
+{% macro photos(items) %}
+  {% if items %}
+    <ul class="photos">
+      {% for item in items %}
+        <li>
+          <a href="{{ item.image_url }}"><img src="{{ item.thumb_url }}" alt="{{ item.caption or 'Completed job' }}" loading="lazy"></a>
+          {% if item.caption %}<span>{{ item.caption }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No photos yet.</p>
+  {% endif %}
+{% endmacro %}
+
+{% macro quote_form(p, brand, brand_text) %}
+  <section id="quote" class="card" style="--brand: {{ brand }}; --brand-text: {{ brand_text }};">
+    <h2>Request a quote</h2>
+    <form class="quote-form" data-slug="{{ p.slug }}" novalidate>
+      <label>Your name<input name="name" autocomplete="name" required maxlength="120"></label>
+      <label>Phone<input name="phone" type="tel" autocomplete="tel" inputmode="tel"></label>
+      <label>Email<input name="email" type="email" autocomplete="email"></label>
+      <label>What kind of job?<input name="job_type" maxlength="120"></label>
+      <label>Details<textarea name="message" rows="4" required maxlength="2000"></textarea></label>
+      <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+      <p class="form-note">Give a phone number or an email so they can reply.</p>
+      <button class="btn btn-primary" type="submit">Send request</button>
+      <p class="form-status" role="status" aria-live="polite"></p>
+    </form>
+    <noscript><p>To request a quote, please call{% if p.call.tel %} <a href="{{ p.call.tel }}">{{ p.call.tel[4:] }}</a>{% endif %}.</p></noscript>
+  </section>
+{% endmacro %}

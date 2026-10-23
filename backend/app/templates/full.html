@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% import "_profile.html" as ui %}
+{% block title %}{{ p.business_name }} · Full profile{% endblock %}
+{% block meta %}{{ ui.meta(p, trade_label, structured_data) }}{% endblock %}
+{% block head %}<script src="/static/profile.js" defer></script>{% endblock %}
+{% block body %}
+<main class="page">
+  <p class="back"><a href="/p/{{ p.slug }}">← Back</a></p>
+  {{ ui.hero(p, trade_label, brand, brand_text) }}
+  {# Sections in the contractor's own drag-and-drop order. #}
+  {% for section in p.layout %}
+    {% if section == "about" and p.about %}
+      <section class="card"><h2>About</h2><p class="prose">{{ p.about }}</p></section>
+    {% elif section == "portfolio" %}
+      <section class="card"><h2>Work</h2>{{ ui.photos(p.portfolio) }}</section>
+    {% elif section == "projects" and p.projects %}
+      <section class="card">
+        <h2>Featured projects</h2>
+        <ul class="list">
+          {% for proj in p.projects %}
+            <li>
+              <strong>{{ proj.title }}</strong>
+              {% if proj.photos %}<div class="photos" style="margin-top:8px">{% for ph in proj.photos %}<a href="{{ ph.image_url }}"><img src="{{ ph.thumb_url }}" alt="{{ proj.title }}" loading="lazy"></a>{% endfor %}</div>{% endif %}
+              {% if proj.job %}<p class="prose">{{ proj.job }}</p>{% endif %}
+              {% if proj.learned %}<p class="prose muted"><em>What I learned:</em> {{ proj.learned }}</p>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% elif section == "licenses" and p.licenses %}
+      <section class="card">
+        <h2>Licenses and certifications</h2>
+        <ul class="list">
+          {% for lic in p.licenses %}
+            <li>
+              <strong>{{ lic.name }}</strong>{% if lic.issuer %} · {{ lic.issuer }}{% endif %}
+              {% if lic.lapsed %}<span class="badge badge-cert_lapsed">Lapsed {{ lic.expires_on }}</span>
+              {% else %}<span class="muted">Valid through {{ lic.expires_on }}</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% elif section == "insurance" %}
+      <section class="card">
+        <h2>Insurance</h2>
+        {% set ins = p.insurance %}
+        {% if ins.status == "verified" %}<p><span class="badge badge-insurance_verified">Insured</span> {{ ins.carrier }}, through {{ ins.expires_on }}</p>
+        {% elif ins.status == "pending" %}<p><span class="badge badge-insurance_pending">Pending review</span> {{ ins.carrier }}</p>
+        {% elif ins.status == "expired" %}<p><span class="badge badge-insurance_expired">Expired</span> {{ ins.carrier }}, ended {{ ins.expires_on }}</p>
+        {% else %}<p class="muted">No insurance on file.</p>{% endif %}
+      </section>
+    {% elif section == "service_area" and p.service_area %}
+      <section class="card"><h2>Service area</h2><p>{{ p.service_area }}</p></section>
+    {% elif section == "quote" %}
+      {{ ui.quote_form(p, brand, brand_text) }}
+    {% endif %}
+  {% endfor %}
+  {% if p.team %}
+    <section class="card">
+      <h2>Team</h2>
+      <ul class="list">{% for t in p.team %}<li><a href="/p/{{ t.slug }}">{{ t.business_name }}</a></li>{% endfor %}</ul>
+    </section>
+  {% endif %}
+</main>
+{% endblock %}

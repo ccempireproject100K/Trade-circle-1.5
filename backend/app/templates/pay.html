@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{% if missing %}Payment link not found{% else %}Pay {{ business }}{% endif %}{% endblock %}
+{% block meta %}<meta name="robots" content="noindex">{% endblock %}
+{% block body %}
+<main class="page pay" {% if not missing %}style="--brand: {{ brand }}; --brand-text: {{ brand_text }}"{% endif %}>
+{% if missing %}
+  <section class="card"><h1>Payment link not found</h1><p>Check the link your contractor sent, or ask them for a new one.</p></section>
+{% else %}
+  <header class="hero pay-hero">
+    <p class="pay-to">Payment to</p>
+    <h1>{{ business }}</h1>
+    <p class="tagline">{{ r.description }}</p>
+  </header>
+  {% if paid %}
+    <p class="notice notice-ok" role="status">Thank you. Your payment was submitted. {% if b.processing_cents %}Bank payments take a few business days to clear.{% endif %} You'll get a receipt by email from Stripe.</p>
+  {% endif %}
+  {% if error == "amount" %}<p class="notice notice-error" role="alert">Enter an amount between {{ money(min_cents) }} and {{ money(b.due_cents) }}.</p>{% endif %}
+  {% if error == "method" %}<p class="notice notice-error" role="alert">Choose a way to pay.</p>{% endif %}
+  {% if error == "stripe" %}<p class="notice notice-error" role="alert">We couldn't open the payment page just now. Please try again.</p>{% endif %}
+  <section class="card pay-card">
+    <p class="pay-label">{% if b.paid_cents or b.processing_cents %}Balance due{% else %}Amount due{% endif %}</p>
+    <p class="pay-amount">{{ money(b.due_cents) }}</p>
+    {% if b.paid_cents or b.processing_cents %}
+      <p class="muted">Total {{ money(r.amount_cents) }} · paid {{ money(b.paid_cents - b.refunded_cents) }}{% if b.processing_cents %} · {{ money(b.processing_cents) }} clearing{% endif %}</p>
+    {% endif %}
+    {% if r.note %}<p class="pay-note">“{{ r.note }}”</p>{% endif %}
+
+    {% if r.status == "paid" or (b.due_cents == 0 and not b.processing_cents) %}
+      <p class="notice notice-ok">Paid in full. Thank you!</p>
+    {% elif b.due_cents == 0 %}
+      <p class="notice">Your payment is clearing. Nothing more is due right now.</p>
+    {% elif r.status == "cancelled" %}
+      <p class="notice">This payment request was closed by {{ business }}. Contact them if you think that's a mistake.</p>
+    {% elif not usable %}
+      <p class="notice">{{ business }} can't take online payments right now. Please contact them to pay.</p>
+    {% else %}
+      <form method="post" class="pay-form">
+        {% if r.allow_partial %}
+          <label class="field"><span>Amount to pay now</span>
+            <input name="amount" inputmode="decimal" value="{{ '%.2f' % (b.due_cents / 100) }}" aria-describedby="partial-hint">
+          </label>
+          <p id="partial-hint" class="muted small">You can pay part now: at least {{ money(min_cents) }}.</p>
+        {% endif %}
+        <fieldset class="pay-methods">
+          <legend>Pay by</legend>
+          {% if r.card %}<label><input type="radio" name="method" value="card" checked> Card</label>{% endif %}
+          {% if r.bank %}<label><input type="radio" name="method" value="bank" {% if not r.card %}checked{% endif %}> Bank account (ACH)</label>{% endif %}
+        </fieldset>
+        {% if r.card and r.offer_save_card %}
+          <label class="check"><input type="checkbox" name="save_card"> Save my card with {{ business }} for next time</label>
+        {% endif %}
+        <button class="btn btn-primary pay-button">Pay now</button>
+        <p class="muted small">You'll enter your details on Stripe's secure page. {{ business }} and Trade Circle never see your full card or bank number.</p>
+      </form>
+    {% endif %}
+  </section>
+  {% if slug %}<p class="more"><a href="/p/{{ slug }}">About {{ business }} →</a></p>{% endif %}
+{% endif %}
+</main>
+{% endblock %}

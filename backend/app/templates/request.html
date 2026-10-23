@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Get bids from local contractors · Trade Circle{% endblock %}
+{% block meta %}<meta name="description" content="Describe your job once and hear back from local tradespeople. Free, no account needed.">{% endblock %}
+{% block body %}
+<main class="page" style="--brand: #1F4E79; --brand-text: #ffffff">
+  <header class="hero">
+    <h1>Get bids from local contractors</h1>
+    <p class="tagline">Describe the job once. Contractors near you reply on a private page, and you choose who to talk to.</p>
+  </header>
+  {% if errors %}
+    <div class="notice notice-error" role="alert"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+  {% endif %}
+  <section class="card">
+    <form class="quote-form" method="post" enctype="multipart/form-data">
+      <label>Kind of work
+        <select name="trade" required>
+          <option value="">Choose one</option>
+          {% for k, v in trades.items() %}<option value="{{ k }}" {% if form.trade == k %}selected{% endif %}>{{ v }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Short title<input name="title" required maxlength="120" value="{{ form.title or '' }}" placeholder="Replace a ceiling fan"></label>
+      <label>What needs doing?<textarea name="details" rows="5" required maxlength="3000">{{ form.details or '' }}</textarea></label>
+      <p class="form-note">Don't include your street address. Share it with the contractor you choose.</p>
+      <label>ZIP code or city, state<input name="location" required maxlength="80" value="{{ form.location or '' }}" placeholder="78701"></label>
+      <label>When would you like it done? (optional)<input name="wanted_on" type="date" value="{{ form.wanted_on or '' }}"></label>
+      <label class="check-line"><input type="checkbox" name="flexible" {% if form.flexible %}checked{% endif %}> My timing is flexible</label>
+      <label>Budget (optional)<input name="budget" maxlength="60" value="{{ form.budget or '' }}" placeholder="About $300"></label>
+      <label>Photos (optional, up to 3)<input name="photos" type="file" accept="image/*" multiple></label>
+      <label>Your name<input name="name" required maxlength="120" autocomplete="name" value="{{ form.name or '' }}"></label>
+      <label>Email<input name="email" type="email" required autocomplete="email" value="{{ form.email or '' }}"></label>
+      <label>Phone (optional)<input name="phone" type="tel" autocomplete="tel" value="{{ form.phone or '' }}"></label>
+      <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+      <label class="check-line"><input type="checkbox" name="consent" required> Contractors I choose may contact me with the details above. Others won't see them.</label>
+      <button class="btn btn-primary" type="submit">Post my job</button>
+      <p class="form-note">Free. We'll email you a private link to your bids. Photos have location data removed.</p>
+    </form>
+  </section>
+</main>
+{% endblock %}
