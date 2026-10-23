@@ -136,7 +136,7 @@ export default function Inbox() {
     try {
       await api("/jobs", {
         method: "POST",
-        body: { title: entry.job_type || `Job for ${entry.name}`, customer_name: entry.name, customer_phone: entry.phone || null, notes: entry.message || entry.notes || "" },
+        body: { title: entry.job_type || `Job for ${entry.name}`, customer_name: entry.name, customer_phone: entry.phone || null, notes: entry.message || entry.notes || "", quote_id: entry.id },
       });
       if (entry.status !== "won") await api(`/inbox/${entry.id}`, { method: "PATCH", body: { status: "won" } });
       setOk(`Added "${entry.job_type || `Job for ${entry.name}`}" to your jobs.`);

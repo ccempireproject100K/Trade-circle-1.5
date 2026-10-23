@@ -1,5 +1,5 @@
 # Trade Circle roadmap
-Build status against [`spec.md`](spec.md) and [`spec-community.md`](spec-community.md). Updated October 23, 2026 (slice 9).
+Build status against [`spec.md`](spec.md) and [`spec-community.md`](spec-community.md). Updated October 23, 2026 (slice 11).
 "Built" means working code with passing tests on both an in-memory and a real MongoDB 7.0 database. Nothing is deployed.
 
 ## Slice 1 — foundation (built)
@@ -111,10 +111,22 @@ Spec: "Job handoffs" in [`spec.md`](spec.md). Rules live in `backend/app/handoff
 - **Break Room**: YouTube music player, the 2048 game, moderator-curated public offers and giveaways, member spot and deal suggestions, anonymous daily usage counts.
 - **Walkthrough video clips**: existing clips up to 3 minutes, re-encoded so no metadata survives, with preview, trim and remove-sound before publishing.
 
+## Slice 11 — customer reviews (built)
+| Area | What exists |
+|---|---|
+| Who can review | A marketplace customer who chose a contractor, from their private request link (`/request/<token>`) — no account. The choice now records which request each inbox lead came from (`marketplace_request_id`), so the lead behind a link can be found again. |
+| When | One review per lead (a unique index on `reviews.lead_id` enforces it in the database), and only once the lead is marked won or a job made from it is done. Jobs made from the follow-ups screen now carry `quote_id`, so "the linked job" is a real link. Before that, the status page shows no form and a direct post records nothing. |
+| The review | 1–5 stars plus text (up to 1,000 characters). Shown publicly under the customer's first name and last initial only — never their full name or contact details. Same abuse guards as the quote form: the shared per-address rate limit and a honeypot that fakes success. The contractor gets an in-app notification. |
+| Public pages | `GET /api/p/{slug}` and `/full` include the count, the average and the newest reviews (3 on the landing layer, 10 on the full profile), with the contractor's responses. The server-rendered pages show the same, and the landing page's schema.org data gains an `AggregateRating` once there is a review, so search results can show stars. |
+| Dashboard | Profile → Reviews: the average, every review (hidden ones included, marked), a public response the contractor can post and edit, and a flag with an optional note for the moderators. |
+| Moderation | Flagging keeps the review public and in the average until a moderator acts. `GET /api/admin/reviews` is the queue (flagged by default); admins hide (off the page and out of the average) and unhide there. Nothing about reviews is tier-gated: they are in `FREE_FEATURES`, on every plan. |
+| Checks | 7 backend tests (too-early and duplicate posts, the won and job-done openings, validation and honeypot, response and edit, other owners locked out, flag → hide → unhide, aggregate math and the rating markup) and 4 dashboard tests (display, respond, flag, empty state). |
+
 ## Plan entitlements (current code)
 | Feature | Free | $3 Starter | $9 Full |
 |---|---|---|---|
 | Profile, portfolio, landing page and quote form | Yes | Yes | Yes |
+| Customer reviews on the page (respond and flag from the dashboard) | Yes | Yes | Yes |
 | Leads | Log in to see them | Plus text and email alerts | Plus text and email alerts |
 | Daily summary email and afternoon follow-up text | In-app only | Yes | Yes |
 | Community, Supplies, Hiring, mentoring, meetups, handoffs, follow-up tracker | Yes | Yes | Yes |

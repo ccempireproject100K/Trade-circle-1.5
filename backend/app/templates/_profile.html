@@ -45,6 +45,32 @@
   {% endif %}
 {% endmacro %}
 
+{% macro stars(n) %}<span class="stars" role="img" aria-label="{{ n }} of 5 stars">{{ "★" * n }}{{ "☆" * (5 - n) }}</span>{% endmacro %}
+
+{% macro reviews_section(p) %}
+  {% if p.reviews and p.reviews.count %}
+  <section class="card">
+    <h2>Reviews</h2>
+    <p class="review-summary">{{ stars((p.reviews.average | round) | int) }} <strong>{{ p.reviews.average }}</strong> · {{ p.reviews.count }} review{{ "s" if p.reviews.count != 1 }}</p>
+    <ul class="list">
+      {% for r in p.reviews.latest %}
+        <li>
+          {{ stars(r.stars) }}
+          <p class="prose">{{ r.text }}</p>
+          <p class="small muted">{{ r.reviewer_name }} · {{ r.created_at.strftime("%b %d, %Y") }}</p>
+          {% if r.response %}
+            <div class="review-response">
+              <p class="prose">{{ r.response.text }}</p>
+              <p class="small muted">Response from the business · {{ r.response.at.strftime("%b %d, %Y") }}</p>
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+{% endmacro %}
+
 {% macro quote_form(p, brand, brand_text) %}
   <section id="quote" class="card" style="--brand: {{ brand }}; --brand-text: {{ brand_text }};">
     <h2>Request a quote</h2>

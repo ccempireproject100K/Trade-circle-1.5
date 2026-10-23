@@ -29,6 +29,7 @@ FEATURES = {
 # Everyone gets these, whatever their plan.
 FREE_FEATURES = [
     "Business page, full profile and quote form",
+    "Customer reviews on your page",
     "Photo portfolio and video clips",
     "Job sheet, follow-ups, calendar and job costing",
     "Community, Supplies, Hiring, Break Room and handoffs",

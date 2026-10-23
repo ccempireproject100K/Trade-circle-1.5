@@ -27,6 +27,7 @@ import Profile from "./pages/Profile.jsx";
 import Quotes from "./pages/Quotes.jsx";
 import Rates from "./pages/Rates.jsx";
 import Referrals from "./pages/Referrals.jsx";
+import Reviews from "./pages/Reviews.jsx";
 import Settings from "./pages/Settings.jsx";
 import Signup from "./pages/Signup.jsx";
 import Team from "./pages/Team.jsx";
@@ -82,6 +83,7 @@ export default function App() {
       <Route path="/team" element={<RequireSignIn><SubNav items={PROFILE_NAV} /><Team /></RequireSignIn>} />
       <Route path="/plan" element={<RequireSignIn><Plan /></RequireSignIn>} />
       <Route path="/referrals" element={<RequireSignIn><SubNav items={PROFILE_NAV} /><Referrals /></RequireSignIn>} />
+      <Route path="/reviews" element={<RequireSignIn><SubNav items={PROFILE_NAV} /><Reviews /></RequireSignIn>} />
       <Route path="/settings" element={<RequireSignIn><Settings /></RequireSignIn>} />
       <Route path="/break-room" element={<RequireSignIn><BreakRoom /></RequireSignIn>} />
       <Route path="*" element={<Navigate to="/" replace />} />

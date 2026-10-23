@@ -172,6 +172,8 @@ textarea { min-height: 96px; resize: vertical; }
   font-weight: 700;
 }
 
+.stars { color: #d98e04; letter-spacing: 0.08em; }
+
 .pill-new, .pill-waiting, .pill-open { color: var(--accent); }
 .pill-contacted, .pill-followed_up, .pill-scheduled, .pill-in_progress, .pill-partly_paid { color: var(--warn); }
 .pill-won, .pill-done, .pill-paid { color: var(--ok); }

@@ -12,6 +12,8 @@
     <p class="tagline">{{ trade_label }} · {{ r.location.label }}{% if r.wanted_on %} · wanted {{ r.wanted_on }}{% elif r.flexible %} · flexible timing{% endif %}</p>
   </header>
   {% if new %}<p class="notice notice-ok" role="status">Your job is posted. Bookmark this page: it's your private link to the bids. We've emailed it to you too.</p>{% endif %}
+  {% if reviewed %}<p class="notice notice-ok" role="status">Thanks — your review is posted on their page.</p>{% endif %}
+  {% if review_error %}<p class="notice notice-error" role="alert">Check your review: pick a star rating and write a few words (up to 1,000 characters).</p>{% endif %}
   {% if not open %}<p class="notice">This request is closed to new bids.</p>{% endif %}
   <section class="card">
     <h2>Bids ({{ bids|length }})</h2>
@@ -28,6 +30,31 @@
         <p class="prose">{{ b.message }}</p>
         {% if b.status == "chosen" %}
           <p class="notice notice-ok">You chose {{ p.business_name }}. They have your contact details and will be in touch.{% if phones.get(b._id) %} You can also call them: <a href="tel:{{ phones.get(b._id) }}">{{ phones.get(b._id) }}</a>.{% endif %}</p>
+          {% set rv = reviews.get(b._id) %}
+          {% if rv and rv.review %}
+            <div class="review-shown">
+              <p><strong>Your review</strong> · <span class="stars" role="img" aria-label="{{ rv.review.stars }} of 5 stars">{{ "★" * rv.review.stars }}{{ "☆" * (5 - rv.review.stars) }}</span></p>
+              <p class="prose">{{ rv.review.text }}</p>
+              {% if rv.review.response %}
+                <div class="review-response">
+                  <p class="prose">{{ rv.review.response.text }}</p>
+                  <p class="small muted">Response from {{ p.business_name }}</p>
+                </div>
+              {% endif %}
+            </div>
+          {% elif rv and rv.can_review %}
+            <form method="post" action="/request/{{ r.token }}/review/{{ b._id }}" class="review-form">
+              <h3 style="margin: 0">Review {{ p.business_name }}</h3>
+              <div role="radiogroup" aria-label="Your rating">
+                {% for n in [5, 4, 3, 2, 1] %}
+                  <label class="star-choice"><input type="radio" name="stars" value="{{ n }}" required> <span class="stars">{{ "★" * n }}</span> {{ n }}</label>
+                {% endfor %}
+              </div>
+              <label>How did it go?<textarea name="text" rows="3" required maxlength="1000"></textarea></label>
+              <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+              <button class="btn btn-primary" type="submit">Post review</button>
+            </form>
+          {% endif %}
         {% elif open %}
           <form method="post" action="/request/{{ r.token }}/choose/{{ b._id }}"><button class="btn btn-primary" type="submit">Choose {{ p.business_name or "this contractor" }}</button></form>
         {% endif %}

@@ -8,7 +8,7 @@ const NAV = [
   { to: "/community", label: "Community", match: ["/community", "/posts", "/share", "/mentoring", "/messages"] },
   { to: "/supplies", label: "Supplies", match: ["/supplies"] },
   { to: "/inbox", label: "Work", match: ["/inbox", "/marketplace", "/jobs", "/calendar", "/time", "/quotes", "/handoffs", "/payments", "/rates"] },
-  { to: "/profile", label: "Profile", match: ["/profile", "/photos", "/team", "/referrals"] },
+  { to: "/profile", label: "Profile", match: ["/profile", "/photos", "/team", "/referrals", "/reviews"] },
 ];
 
 const isActive = (item, path) => item.match.some((m) => (m === "/" ? path === "/" : path === m || path.startsWith(`${m}/`)));
@@ -73,4 +73,5 @@ export const PROFILE_NAV = [
   { to: "/photos", label: "Photos" },
   { to: "/team", label: "Team" },
   { to: "/referrals", label: "Referrals" },
+  { to: "/reviews", label: "Reviews" },
 ];
