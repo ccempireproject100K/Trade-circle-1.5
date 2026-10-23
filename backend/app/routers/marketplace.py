@@ -32,6 +32,7 @@ from ..notices import notify
 from ..notify import _message, queue_alert
 from ..photos import _read_limited
 from ..ratelimit import client_ip
+from ..reviews import MAX_TEXT, display_name, lead_for_bid, review_view, reviewable
 from ..security import current_user
 from ..tiers import MARKETPLACE_FREE_BIDS, allows
 from .pages import TRADE_LABELS, templates
@@ -146,19 +147,27 @@ async def _by_token(db, token: str) -> dict:
 
 
 @router.get("/request/{token}", response_class=HTMLResponse, include_in_schema=False)
-async def status_page(token: str, request: Request, db=Depends(get_db), new: str = ""):
+async def status_page(token: str, request: Request, db=Depends(get_db), new: str = "", reviewed: str = "", review_error: str = ""):
     doc = await db.marketplace.find_one({"token": token})
     if doc is None:
         return _page(request, "request_status.html", {"missing": True}, 404)
     bids = await db.marketplace_bids.find({"request_id": doc["_id"], "status": {"$ne": "withdrawn"}}).sort("created_at", 1).to_list(100)
     profiles = {p["owner_id"]: p async for p in db.profiles.find({"owner_id": {"$in": [b["contractor_id"] for b in bids]}})}
     chosen_phones = {}
+    reviews = {}
     for b in bids:
         if b["status"] == "chosen":
             p = profiles.get(b["contractor_id"]) or {}
             chosen_phones[b["_id"]] = p.get("phone")
+            # One review per lead, offered here once the work is won or done.
+            lead = await lead_for_bid(db, doc, b)
+            existing = await db.reviews.find_one({"lead_id": lead["_id"]}) if lead else None
+            reviews[b["_id"]] = {
+                "review": review_view(existing) if existing and existing["status"] != "hidden" else None,
+                "can_review": bool(lead and not existing and await reviewable(db, lead)),
+            }
     open_ = doc["status"] == "open" and doc["closes_on"] >= today(request).isoformat()
-    return _page(request, "request_status.html", {"r": doc, "bids": bids, "profiles": profiles, "phones": chosen_phones, "new": new == "1", "open": open_, "trade_label": TRADE_LABELS.get(doc["trade"], doc["trade"])})
+    return _page(request, "request_status.html", {"r": doc, "bids": bids, "profiles": profiles, "phones": chosen_phones, "reviews": reviews, "new": new == "1", "reviewed": reviewed == "1", "review_error": review_error == "1", "open": open_, "trade_label": TRADE_LABELS.get(doc["trade"], doc["trade"])})
 
 
 @router.post("/request/{token}/choose/{bid_id}", include_in_schema=False)
@@ -173,6 +182,8 @@ async def choose(token: str, bid_id: str, request: Request, db=Depends(get_db)):
             "job_type": doc["title"], "message": doc["details"], "source": "marketplace", "channel": "other", "status": "waiting",
             "notes": f"From the lead marketplace: {doc['location']['label']}" + (f", wanted {doc['wanted_on']}" if doc.get("wanted_on") else ""),
             "follow_up_on": None, "created_at": now(),
+            # Links the lead back to this request, so the customer can review it later from this page.
+            "marketplace_request_id": doc["_id"], "marketplace_bid_id": bid_id,
         })
         text = f"{c['name']} chose you for \"{doc['title']}\". Their contact details are in your follow-ups."
         await notify(db, bid["contractor_id"], "marketplace", text, "/inbox")
@@ -185,6 +196,55 @@ async def close(token: str, request: Request, db=Depends(get_db)):
     doc = await _by_token(db, token)
     await db.marketplace.update_one({"_id": doc["_id"], "status": "open"}, {"$set": {"status": "closed", "closed_at": now()}})
     return RedirectResponse(f"/request/{token}", status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/request/{token}/review/{bid_id}", include_in_schema=False)
+async def submit_review(
+    token: str, bid_id: str, request: Request, db=Depends(get_db),
+    stars: str = Form(""), text: str = Form(""), website: str = Form(""),
+):
+    """The customer reviews the contractor they chose, from this private link.
+
+    One review per lead (a unique index on lead_id is the backstop), and only
+    once the lead is won or a job made from it is done. Like the request form
+    itself: rate-limited per address, with a honeypot that fakes success.
+    """
+    request.app.state.limiters["quote"].check(f"review:{client_ip(request)}")
+    doc = await _by_token(db, token)
+    back = f"/request/{token}"
+    if website:  # honeypot: answer like a success so the bot learns nothing
+        return RedirectResponse(f"{back}?reviewed=1", status.HTTP_303_SEE_OTHER)
+    bid = await db.marketplace_bids.find_one({"_id": bid_id, "request_id": doc["_id"], "status": "chosen"})
+    lead = await lead_for_bid(db, doc, bid) if bid else None
+    if lead is None or not await reviewable(db, lead):
+        return RedirectResponse(back, status.HTTP_303_SEE_OTHER)
+    try:
+        rating = int(stars)
+    except ValueError:
+        rating = 0
+    words = text.strip()
+    if not 1 <= rating <= 5 or not 1 <= len(words) <= MAX_TEXT:
+        return RedirectResponse(f"{back}?review_error=1", status.HTTP_303_SEE_OTHER)
+    review = {
+        "_id": uuid.uuid4().hex,
+        "owner_id": bid["contractor_id"],
+        "lead_id": lead["_id"],
+        "marketplace_request_id": doc["_id"],
+        "stars": rating,
+        "text": words,
+        "reviewer_name": display_name(doc["customer"]["name"]),
+        "status": "published",
+        "response": None,
+        "created_at": now(),
+    }
+    try:
+        await db.reviews.insert_one(review)
+    except DuplicateKeyError:
+        # One review per lead; a second try changes nothing.
+        return RedirectResponse(back, status.HTTP_303_SEE_OTHER)
+    request.state.audit_record = review["_id"]
+    await notify(db, bid["contractor_id"], "review", f"{review['reviewer_name']} left you a {rating}-star review.", "/reviews")
+    return RedirectResponse(f"{back}?reviewed=1", status.HTTP_303_SEE_OTHER)
 
 
 # --- the contractor's side ---

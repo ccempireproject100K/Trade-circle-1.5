@@ -246,6 +246,23 @@ class JobIn(Strict):
     scheduled_on: date | None = None
     estimate_cents: Annotated[int, Field(ge=0, le=100_000_000)] | None = None
     notes: Annotated[str, Field(max_length=4000)] = ""
+    # Set when the job was made from an inbox lead, so the lead stays linked.
+    quote_id: Annotated[str, Field(max_length=64)] | None = None
+
+
+# --- customer reviews ---
+
+
+class ReviewResponseIn(Strict):
+    """The contractor's public answer to a review. Sent again to edit it."""
+
+    text: Annotated[str, Field(min_length=1, max_length=1000)]
+
+
+class ReviewFlagIn(Strict):
+    """Ask a moderator to look at a review. The review stays public meanwhile."""
+
+    note: Annotated[str, Field(max_length=500)] = ""
 
 
 class JobUpdate(Strict):

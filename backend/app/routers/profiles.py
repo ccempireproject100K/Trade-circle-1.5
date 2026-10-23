@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from ..deps import get_db, now, partial_update, public_doc, today
 from ..models import TRADES, InsuranceIn, ProfileUpdate
 from ..profiles import SECTIONS, full_view, landing_view, reflow_layout
+from ..reviews import summary_for
 from ..security import current_user, require_role
 from ..team import acting_for
 
@@ -98,7 +99,9 @@ async def verify_insurance(
 async def public_landing(slug: str, request: Request, db=Depends(get_db)):
     profile = await published_profile(db, slug)
     portfolio = await portfolio_for(db, profile["owner_id"])
-    return landing_view(profile, portfolio, today(request), request.app.state.settings.recert_banner_days)
+    page = landing_view(profile, portfolio, today(request), request.app.state.settings.recert_banner_days)
+    page["reviews"] = await summary_for(db, profile["owner_id"], latest=3)
+    return page
 
 
 @router.get("/p/{slug}/full")
@@ -108,4 +111,5 @@ async def public_full(slug: str, request: Request, db=Depends(get_db)):
     projects = await featured_projects(db, profile["owner_id"])
     page = full_view(profile, portfolio, today(request), request.app.state.settings.recert_banner_days, projects)
     page["team"] = await team_on_profile(db, profile["owner_id"])
+    page["reviews"] = await summary_for(db, profile["owner_id"], latest=10)
     return page

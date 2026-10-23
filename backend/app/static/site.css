@@ -220,3 +220,14 @@ a { color: inherit; }
 .bid { padding: 12px 0; border-bottom: 1px solid var(--line); }
 .bid:last-child { border-bottom: 0; }
 .bid form { margin-top: 8px; display: flex; }
+
+/* --- customer reviews --- */
+.stars { color: #d98e04; letter-spacing: 0.08em; }
+.review-summary { margin: 0 0 4px; }
+.review-response { margin-top: 8px; padding: 8px 12px; border-left: 3px solid var(--line); background: var(--bg); }
+.review-response .prose { margin: 0; }
+.review-form { gap: 10px; margin-top: 12px; text-align: left; }
+.bid form.review-form { display: grid; }
+.review-form .star-choice { display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; min-height: 44px; font-size: 1.1rem; }
+.review-form textarea { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--text); font: inherit; font-size: 16px; }
+.review-shown { margin-top: 12px; }

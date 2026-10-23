@@ -8,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 from ..deps import get_db, today
 from ..models import TRADES
 from ..profiles import DEFAULT_BRAND_COLOR, full_view, landing_view, text_color_on
+from ..reviews import summary_for
 from .profiles import featured_projects, team_on_profile, portfolio_for, published_profile
 
 router = APIRouter(tags=["pages"], include_in_schema=False)
@@ -47,6 +48,13 @@ def _structured_data(page: dict, trade_label: str, public_url: str) -> dict:
         data["telephone"] = page["call"]["tel"].removeprefix("tel:")
     if page["portfolio"]:
         data["image"] = _absolute(page["portfolio"][0]["image_url"], public_url)
+    reviews = page.get("reviews") or {}
+    if reviews.get("count"):
+        data["aggregateRating"] = {
+            "@type": "AggregateRating",
+            "ratingValue": reviews["average"],
+            "reviewCount": reviews["count"],
+        }
     return data
 
 
@@ -65,8 +73,10 @@ async def _render(request: Request, db, slug: str, layer: str) -> HTMLResponse:
         projects = await featured_projects(db, profile["owner_id"])
         page = full_view(profile, portfolio, today(request), settings.recert_banner_days, projects)
         page["team"] = await team_on_profile(db, profile["owner_id"])
+        page["reviews"] = await summary_for(db, profile["owner_id"], latest=10)
     else:
         page = landing_view(profile, portfolio, today(request), settings.recert_banner_days)
+        page["reviews"] = await summary_for(db, profile["owner_id"], latest=3)
     brand = page["brand_color"] or DEFAULT_BRAND_COLOR
     trade_label = TRADE_LABELS.get(page["trade"], page["trade"])
     response = templates.TemplateResponse(
