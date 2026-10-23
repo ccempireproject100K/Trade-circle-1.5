@@ -40,11 +40,25 @@ function Alerts() {
   if (!alerts) return null;
   if (!alerts.available) {
     return (
-      <section className="card">
+      <section className="card stack">
         <h2>Lead alerts</h2>
         <p className="muted" style={{ margin: 0 }}>
-          On the free plan, new leads wait under Work → Follow-ups. Paid plans get a text and an email the moment a lead comes in.
+          On the free plan, new leads wait under Work → Follow-ups, and you get one weekly update email when there's something new. Texts are a paid-plan feature.
         </p>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={alerts.daily_summary}
+            onChange={async (e) => setAlerts(await api("/me/alerts/digest", { method: "PUT", body: { on: e.target.checked } }))}
+          />
+          <span>
+            Weekly update email
+            <span className="field-hint" style={{ display: "block" }}>
+              Once a week, on Monday morning, only when there's something new: community activity and follow-ups due.
+            </span>
+          </span>
+        </label>
+        <Notice error={status.error} ok={status.ok} />
       </section>
     );
   }
@@ -62,10 +76,11 @@ function Alerts() {
         <span>
           Daily email summary
           <span className="field-hint" style={{ display: "block" }}>
-            Once a morning, only when there's something new: community activity and follow-ups due. If texts are on, one afternoon text when follow-ups are still due.
+            Once a morning, only when there's something new: community activity and follow-ups due.
           </span>
         </span>
       </label>
+      <p className="small muted" style={{ margin: 0 }}>{alerts.sms_policy}</p>
       {alerts.sms.active ? (
         <div className="row-between">
           <span>Texts go to <strong>{alerts.sms.phone}</strong></span>
@@ -79,7 +94,7 @@ function Alerts() {
           <label className="check">
             <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} />
             <span className="small">
-              Text me when I get a new lead. Message and data rates may apply. Reply STOP to opt out at any time.
+              Text me my Trade Circle updates, within my plan's daily limit. Message and data rates may apply. Reply STOP to opt out at any time.
             </span>
           </label>
           <button className="btn btn-primary" disabled={!consent}>Turn on texts</button>

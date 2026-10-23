@@ -17,13 +17,25 @@ class SmsAlertsIn(Strict):
     consent: Literal[True]
 
 
+# What each plan's outside updates look like, in the member's words. Texts are
+# capped per day by plan (tiers.SMS_DAILY_BUDGET); emails are not capped.
+SMS_POLICY = {
+    "free": "One weekly update email when there's something new. Texts are a paid-plan feature.",
+    "starter": "One text a day: your morning rundown. New leads also arrive by email and in the app.",
+    "full": "Up to two texts a day: your morning rundown, plus one more (a new lead, or an afternoon follow-up reminder). New leads also arrive by email and in the app.",
+}
+
+
 def _view(user: dict) -> dict:
     sms = user.get("alert_sms") or {}
+    tier = user.get("tier", "free")
     return {
         "sms": {"phone": sms.get("phone"), "active": bool(sms.get("active"))},
         "email": user["email"],
-        "available": user.get("tier", "free") != "free",
-        # Paid plans: one daily email summary of community activity and follow-ups due. On unless turned off.
+        "available": tier != "free",
+        "sms_policy": SMS_POLICY[tier],
+        # The summary preference: the daily email summary on paid plans, the
+        # weekly update email on the free plan. On unless turned off.
         "daily_summary": user.get("digest_email", True),
     }
 
@@ -53,6 +65,6 @@ class DigestIn(Strict):
 
 @router.put("/digest")
 async def set_digest(body: DigestIn, user: dict = Depends(current_user), db=Depends(get_db)):
-    require_tier(user, ALERTS_TIER, "The daily email summary")
+    # Every plan has a summary cadence to turn off: daily on paid, weekly on free.
     await db.users.update_one({"_id": user["_id"]}, {"$set": {"digest_email": body.on}})
     return _view({**user, "digest_email": body.on})

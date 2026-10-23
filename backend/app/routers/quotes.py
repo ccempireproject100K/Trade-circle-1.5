@@ -37,7 +37,7 @@ async def request_quote(slug: str, body: QuoteIn, request: Request, db=Depends(g
         "created_at": now(),
     }
     await db.quotes.insert_one(quote)
-    await queue_lead_alert(db, profile["owner_id"], quote, request.app.state.settings.public_url)
+    await queue_lead_alert(db, profile["owner_id"], quote, request.app.state.settings.public_url, day=today(request).isoformat())
     request.state.audit_record = quote["_id"]
     return ACCEPTED
 

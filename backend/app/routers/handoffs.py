@@ -217,6 +217,7 @@ async def propose(body: HandoffIn, request: Request, user: dict = Depends(curren
         text=f"{handoff['sender']['business_name']} asked you to cover \"{job['title']}\" starting {handoff['start_on']}. Accept or decline:",
         link=f"{settings.public_url}/app/handoffs",
         record_id=handoff["_id"],
+        day=day.isoformat(),
     )
     return _view(handoff, user["_id"])
 
@@ -236,7 +237,7 @@ async def _transition(db, handoff_id: str, *, who: str, user_id: str, from_statu
     return updated
 
 
-async def _tell_sender(db, settings, h: dict, verb: str) -> None:
+async def _tell_sender(db, settings, h: dict, verb: str, day: str) -> None:
     name = h["recipient"]["business_name"]
     await queue_alert(
         db,
@@ -246,6 +247,7 @@ async def _tell_sender(db, settings, h: dict, verb: str) -> None:
         text=f"{name} {verb} \"{h['job']['title']}\".",
         link=f"{settings.public_url}/app/handoffs",
         record_id=h["_id"],
+        day=day,
     )
 
 
@@ -271,7 +273,7 @@ async def accept(handoff_id: str, request: Request, user: dict = Depends(current
     )
     # Remembered so the job can go back exactly as it was if the handoff is reversed or cancelled.
     await db.handoffs.update_one({"_id": h["_id"]}, {"$set": {"sender_job_status": (before or {}).get("status", "scheduled")}})
-    await _tell_sender(db, _settings(request), h, "accepted")
+    await _tell_sender(db, _settings(request), h, "accepted", today(request).isoformat())
     return _view(h, user["_id"])
 
 
@@ -279,7 +281,7 @@ async def accept(handoff_id: str, request: Request, user: dict = Depends(current
 async def decline(handoff_id: str, request: Request, user: dict = Depends(current_user), db=Depends(get_db)):
     h = await _transition(db, handoff_id, who="recipient_id", user_id=user["_id"], from_status="proposed", to_status="declined", stamp="responded_at")
     await rules.release_slot(db, h)
-    await _tell_sender(db, _settings(request), h, "declined")
+    await _tell_sender(db, _settings(request), h, "declined", today(request).isoformat())
     return _view(h, user["_id"])
 
 
@@ -294,7 +296,7 @@ async def withdraw(handoff_id: str, user: dict = Depends(current_user), db=Depen
 async def complete(handoff_id: str, request: Request, user: dict = Depends(current_user), db=Depends(get_db)):
     h = await _transition(db, handoff_id, who="recipient_id", user_id=user["_id"], from_status="accepted", to_status="completed", stamp="completed_at")
     await db.jobs.update_one({"from_handoff": h["_id"], "owner_id": user["_id"]}, {"$set": {"status": "done", "updated_at": now()}})
-    await _tell_sender(db, _settings(request), h, "completed")
+    await _tell_sender(db, _settings(request), h, "completed", today(request).isoformat())
     return _view(h, user["_id"])
 
 
@@ -317,10 +319,10 @@ async def _return_job(db, h: dict) -> None:
     )
 
 
-async def _tell(db, settings, to_id: str, h: dict, kind: str, text: str) -> None:
+async def _tell(db, settings, to_id: str, h: dict, kind: str, text: str, day: str) -> None:
     # In-app for everyone; email or text too on paid plans, under the existing alert rules.
     await notify(db, to_id, kind, text, "/handoffs")
-    await queue_alert(db, to_id, kind=kind, subject=text, text=text, link=f"{settings.public_url}/app/handoffs", record_id=h["_id"])
+    await queue_alert(db, to_id, kind=kind, subject=text, text=text, link=f"{settings.public_url}/app/handoffs", record_id=h["_id"], day=day)
 
 
 @router.post("/handoffs/{handoff_id}/reverse")
@@ -335,7 +337,7 @@ async def reverse(handoff_id: str, body: HandoffReasonIn, request: Request, user
     await _return_job(db, h)
     await rules.release_slot(db, h)
     await _tell(db, _settings(request), h["sender_id"], h, "handoff_reversed",
-                f"{h['recipient']['business_name']} handed \"{h['job']['title']}\" back to you: {body.reason.strip()[:120]}")
+                f"{h['recipient']['business_name']} handed \"{h['job']['title']}\" back to you: {body.reason.strip()[:120]}", today(request).isoformat())
     return _view(await db.handoffs.find_one({"_id": handoff_id}), user["_id"])
 
 
@@ -356,7 +358,7 @@ async def request_cancel(handoff_id: str, body: HandoffReasonIn, request: Reques
         raise HTTPException(status.HTTP_409_CONFLICT, "You've already asked to cancel; waiting for their answer.")
     request.state.audit_record = handoff_id
     await _tell(db, _settings(request), updated["recipient_id"], updated, "handoff_cancel_requested",
-                f"{updated['sender']['business_name']} asked to cancel the handoff of \"{updated['job']['title']}\": {body.reason.strip()[:120]}")
+                f"{updated['sender']['business_name']} asked to cancel the handoff of \"{updated['job']['title']}\": {body.reason.strip()[:120]}", today(request).isoformat())
     return _view(updated, user["_id"])
 
 
@@ -373,10 +375,10 @@ async def respond_cancel(handoff_id: str, body: CancelResponseIn, request: Reque
         )
         await _return_job(db, h)
         # The weekly slot stays used: the sender chose to take the job back.
-        await _tell(db, settings, h["sender_id"], h, "handoff_cancelled", f"{h['recipient']['business_name']} agreed: \"{h['job']['title']}\" is back on your job sheet.")
+        await _tell(db, settings, h["sender_id"], h, "handoff_cancelled", f"{h['recipient']['business_name']} agreed: \"{h['job']['title']}\" is back on your job sheet.", today(request).isoformat())
     else:
         await db.handoffs.update_one({"_id": handoff_id, "cancel_request.status": "pending"}, {"$set": {"cancel_request.status": "declined", "cancel_request.answered_at": now()}})
-        await _tell(db, settings, pending["sender_id"], pending, "handoff_cancel_declined", f"{pending['recipient']['business_name']} is keeping \"{pending['job']['title']}\".")
+        await _tell(db, settings, pending["sender_id"], pending, "handoff_cancel_declined", f"{pending['recipient']['business_name']} is keeping \"{pending['job']['title']}\".", today(request).isoformat())
     return _view(await db.handoffs.find_one({"_id": handoff_id}), user["_id"])
 
 

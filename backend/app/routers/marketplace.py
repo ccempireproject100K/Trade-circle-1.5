@@ -187,7 +187,7 @@ async def choose(token: str, bid_id: str, request: Request, db=Depends(get_db)):
         })
         text = f"{c['name']} chose you for \"{doc['title']}\". Their contact details are in your follow-ups."
         await notify(db, bid["contractor_id"], "marketplace", text, "/inbox")
-        await queue_alert(db, bid["contractor_id"], kind="marketplace_chosen", subject="A customer chose you", text=text, link=f"{request.app.state.settings.public_url}/app/inbox", record_id=bid["_id"])
+        await queue_alert(db, bid["contractor_id"], kind="marketplace_chosen", subject="A customer chose you", text=text, link=f"{request.app.state.settings.public_url}/app/inbox", record_id=bid["_id"], day=today(request).isoformat())
     return RedirectResponse(f"/request/{token}", status.HTTP_303_SEE_OTHER)
 
 

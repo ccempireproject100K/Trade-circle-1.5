@@ -123,11 +123,11 @@ export default function Home() {
         </div>
         {user.tier === "free" ? (
           <p className="muted" style={{ margin: 0 }}>
-            On the free plan, new leads wait here under Work → Follow-ups. Paid plans add instant text and email alerts.
+            On the free plan, new leads wait here under Work → Follow-ups. Paid plans add email alerts and a daily text allowance.
           </p>
         ) : (
           <p className="muted" style={{ margin: 0 }}>
-            Get a text the moment a lead comes in: <Link to="/settings">set up alerts</Link>.
+            Get your leads by email and your daily rundown by text: <Link to="/settings">set up alerts</Link>.
           </p>
         )}
       </section>
