@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Trade Circle — the community and work network for contractors{% endblock %}
+{% block meta %}
+  <meta name="description" content="{{ description }}">
+  <meta property="og:title" content="Trade Circle">
+  <meta property="og:description" content="{{ description }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ public_url }}/">
+{% endblock %}
+{% block body %}
+<main class="page home" style="--brand: {{ brand }}; --brand-text: {{ brand_text }};">
+  <header class="site-header">
+    <span class="wordmark">Trade Circle</span>
+    <nav class="site-nav">
+      <a class="btn" href="/app/login">Log in</a>
+      <a class="btn btn-primary" href="/app/signup">Sign up</a>
+    </nav>
+  </header>
+
+  <section class="hero home-hero">
+    <h1>The community and work network for contractor small businesses</h1>
+    <p class="tagline">A public page that brings in work, handoffs and vacation coverage from people you trust, a marketplace of local jobs, and a break room full of the trades.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="/app/signup">Create your free page</a>
+      <a class="btn" href="/request">Post a job</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>What you get</h2>
+    <ul class="feature-grid">
+      <li>
+        <h3>Your public page</h3>
+        <p>Your story, services, licenses and insurance, a photo and video portfolio, and customer reviews — with a quote form that turns visitors into leads.</p>
+      </li>
+      <li>
+        <h3>Handoffs &amp; vacation coverage</h3>
+        <p>Booked solid, or finally taking a week off? Hand jobs to members you trust and pick up work when you're slow. Vacations lift the handoff caps.</p>
+      </li>
+      <li>
+        <h3>Lead marketplace</h3>
+        <p>Homeowners post jobs and local contractors bid. Free plans get 3 bids a month; Full bids without a cap.</p>
+      </li>
+      <li>
+        <h3>Community &amp; Break Room</h3>
+        <p>Posts, supplies, hiring, mentoring and meetups — a community of people in the trades, not another feed of ads.</p>
+      </li>
+      <li>
+        <h3>Pay &amp; rates, and the cost calculator</h3>
+        <p>See what the trade charges around you, and price jobs with a calculator that keeps markup and margin straight.</p>
+      </li>
+      <li>
+        <h3>The daily rundown <span class="badge">Starter</span></h3>
+        <p>Every morning, one summary of what's new — leads, messages, follow-ups due — by email, and as a text on paid plans.</p>
+      </li>
+      <li>
+        <h3>Time tracking <span class="badge">Starter</span></h3>
+        <p>Track time on jobs in the same place you track the work.</p>
+      </li>
+      <li>
+        <h3>Customer payments <span class="badge">Full</span></h3>
+        <p>Take card and bank payments from customers through Stripe, on a pay page made for the job.</p>
+      </li>
+      <li>
+        <h3>YouTube auto-posting <span class="badge">Starter</span></h3>
+        <p>Connect your channel once, and the project videos you pick post to YouTube after a quick confirm.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>For homeowners</h2>
+    <p>Post your job once, and local contractors come to you with bids. You pick who does the work — and when it's done, your review helps the next neighbor choose.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="/request">Post a job</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Simple pricing</h2>
+    <p class="muted">Start free. Paid plans are month to month — no contract, no per-lead fees.</p>
+    <div class="price-grid">
+      {% for plan in plans %}
+      <article class="plan">
+        <h3>{{ plan.name }}</h3>
+        <p class="price">{{ plan.price }}</p>
+        <p class="muted">{{ plan.intro }}</p>
+        <ul class="list">
+          {% for point in plan.points %}<li>{{ point }}</li>{% endfor %}
+        </ul>
+        <p class="texts muted">{{ plan.texts }}</p>
+      </article>
+      {% endfor %}
+    </div>
+    <div class="actions">
+      <a class="btn btn-primary" href="/app/signup">Start free</a>
+    </div>
+  </section>
+
+  <p class="copyright">© Mind At Ease Solutions</p>
+</main>
+{% endblock %}

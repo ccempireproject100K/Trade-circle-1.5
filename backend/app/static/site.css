@@ -221,6 +221,25 @@ a { color: inherit; }
 .bid:last-child { border-bottom: 0; }
 .bid form { margin-top: 8px; display: flex; }
 
+/* --- front door (home page) --- */
+.site-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0 2px; }
+.wordmark { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em; }
+.site-nav { display: flex; gap: 8px; }
+.site-nav .btn { flex: none; min-height: 44px; padding: 0 18px; }
+.home-hero h1 { font-size: 2rem; }
+.feature-grid { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.feature-grid h3 { margin: 0 0 4px; font-size: 1.02rem; }
+.feature-grid h3 .badge { margin-left: 6px; vertical-align: 2px; }
+.feature-grid p { margin: 0; color: var(--muted); }
+@media (min-width: 560px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
+.price-grid { display: grid; gap: 16px; }
+@media (min-width: 720px) { .price-grid { grid-template-columns: repeat(3, 1fr); } }
+.plan { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.plan h3 { margin: 0; font-size: 1.05rem; }
+.plan .price { margin: 4px 0 8px; font-size: 1.6rem; font-weight: 800; }
+.plan .texts { margin: 10px 0 0; font-size: 0.9rem; }
+.copyright { margin: 24px 0 0; text-align: center; font-size: 0.85rem; color: var(--muted); }
+
 /* --- customer reviews --- */
 .stars { color: #d98e04; letter-spacing: 0.08em; }
 .review-summary { margin: 0 0 4px; }

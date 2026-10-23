@@ -97,6 +97,89 @@ def test_quote_accepts_us_phone_formats(client, signup):
     assert client.get("/api/inbox", headers=headers).json()[0]["phone"] == "+15125550199"
 
 
+def test_home_page_is_the_front_door(client):
+    res = client.get("/")
+    assert res.status_code == 200
+    assert res.headers["content-type"].startswith("text/html")
+    html = res.text
+    assert "<title>Trade Circle — the community and work network for contractors</title>" in html
+    assert "community and work network for contractor small businesses" in html
+    assert '<meta name="description"' in html and 'property="og:title"' in html
+    # The real ways in: member login/signup live in the dashboard app.
+    assert 'href="/app/login"' in html
+    assert 'href="/app/signup"' in html
+    assert "Create your free page" in html
+    # Homeowners get their own strip, into the real marketplace form.
+    assert "For homeowners" in html
+    assert 'href="/request"' in html
+    # Pricing straight from tiers.py, with the text policy per plan.
+    assert "$3/mo" in html and "$9/mo" in html
+    assert "one a day — your morning rundown" in html
+    assert "up to two a day" in html
+    assert "one weekly update email" in html
+    assert "Weekly update email" in html  # the free plan's card, from FREE_FEATURES + the weekly line
+    # Only what is built: nothing from the not-built list may be promised.
+    assert "Google Business Profile sync" not in html
+    assert "Crew sharing" not in html
+    assert "Invoicing through Empire" not in html
+    # No /privacy or /terms pages exist yet, so the page must not link to them.
+    assert 'href="/privacy"' not in html
+    assert 'href="/terms"' not in html
+    assert "© Mind At Ease Solutions" in html
+    csp = res.headers["content-security-policy"]
+    assert "script-src 'self'" in csp and "frame-ancestors 'none'" in csp
+
+
+def test_home_page_with_everything_configured(db, tmp_path):
+    from datetime import date
+
+    from fastapi.testclient import TestClient
+
+    from app.config import Settings
+    from app.main import create_app
+
+    settings = Settings(
+        jwt_secret="t" * 40,
+        media_dir=str(tmp_path / "media"),
+        public_url="https://tradecircle.example.com",
+        academy_url="https://academy.example.com",
+        twilio_account_sid="AC" + "x" * 32,
+        twilio_auth_token="x" * 32,
+        twilio_messaging_sid="MG" + "x" * 32,
+        resend_api_key="re_" + "x" * 24,
+        resend_from_email="alerts@example.com",
+        stripe_secret_key="sk_test_" + "x" * 24,
+        stripe_webhook_secret="whsec_" + "x" * 24,
+        stripe_price_starter="price_starter",
+        stripe_price_full="price_full",
+        ai_api_key="x" * 24,
+        ai_model="test-model",
+        ai_input_price=1.0,
+        ai_output_price=2.0,
+        ai_monthly_budget=10.0,
+        encryption_key="k" * 44,
+        youtube_client_id="yt-client",
+        youtube_client_secret="yt-secret",
+        youtube_redirect_uri="https://tradecircle.example.com/api/youtube/callback",
+    )
+    app = create_app(settings, db=db, today=lambda: date(2026, 10, 23))
+    with TestClient(app, base_url="https://testserver") as c:
+        res = c.get("/")
+        assert res.status_code == 200
+        assert "Create your free page" in res.text
+        # The shared footer picks up the Academy link once one is configured.
+        assert 'href="https://academy.example.com"' in res.text
+        assert 'content="https://tradecircle.example.com/"' in res.text  # og:url
+
+
+def test_unknown_paths_still_404(client, signup):
+    assert client.get("/no-such-page").status_code == 404
+    _, slug = _setup(client, signup)
+    assert client.get(f"/p/{slug}").status_code == 200
+    assert client.get("/p/no-such-pro").status_code == 404
+    assert client.get("/health").json() == {"ok": True}
+
+
 def test_text_color_contrast():
     assert text_color_on("#FFFFFF") == "#111111"
     assert text_color_on("#000000") == "#FFFFFF"

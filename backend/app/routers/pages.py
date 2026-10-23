@@ -9,6 +9,7 @@ from ..deps import get_db, today
 from ..models import TRADES
 from ..profiles import DEFAULT_BRAND_COLOR, full_view, landing_view, text_color_on
 from ..reviews import summary_for
+from ..tiers import FEATURES, FREE_FEATURES, PLANS
 from .profiles import featured_projects, team_on_profile, portfolio_for, published_profile
 
 router = APIRouter(tags=["pages"], include_in_schema=False)
@@ -88,6 +89,65 @@ async def _render(request: Request, db, slug: str, layer: str) -> HTMLResponse:
             "brand_text": text_color_on(brand),
             "trade_label": trade_label,
             "structured_data": _structured_data(page, trade_label, settings.public_url),
+            "academy_url": settings.academy_url,
+        },
+    )
+    response.headers["Content-Security-Policy"] = PAGE_CSP
+    response.headers["Cache-Control"] = "public, max-age=60"
+    return response
+
+
+# --- the front door -------------------------------------------------------
+# Pricing on this page is rendered from tiers.py, the same table every feature
+# gate reads, so the front door can only promise what is actually built.
+HOME_DESCRIPTION = (
+    "Trade Circle is the community and work network for contractor small businesses: "
+    "a free public page and quote form, leads, handoffs and vacation coverage, a "
+    "homeowner marketplace, and a community of people in the trades."
+)
+_PLAN_INTRO = {
+    "free": "Everything you need to be found and to plug into the community.",
+    "starter": "Everything in Free, plus:",
+    "full": "Everything in Starter, plus:",
+}
+_TEXT_POLICY = {
+    "free": "No texts — one weekly update email instead, only when there's something new.",
+    "starter": "Texts: one a day — your morning rundown.",
+    "full": "Texts: up to two a day — the rundown, plus one more.",
+}
+
+
+def _plan_cards() -> list[dict]:
+    cards = []
+    for key, plan in PLANS.items():
+        if key == "free":
+            points = [*FREE_FEATURES, "Weekly update email"]
+        else:
+            points = [label for tier, label, built in FEATURES.values() if tier == key and built]
+        cards.append(
+            {
+                "name": plan["name"],
+                "price": "Free" if plan["price_cents"] == 0 else f"${plan['price_cents'] // 100}/mo",
+                "intro": _PLAN_INTRO[key],
+                "points": points,
+                "texts": _TEXT_POLICY[key],
+            }
+        )
+    return cards
+
+
+@router.get("/", response_class=HTMLResponse)
+async def home_page(request: Request):
+    settings = request.app.state.settings
+    response = templates.TemplateResponse(
+        request,
+        "home.html",
+        {
+            "brand": DEFAULT_BRAND_COLOR,
+            "brand_text": text_color_on(DEFAULT_BRAND_COLOR),
+            "description": HOME_DESCRIPTION,
+            "public_url": settings.public_url,
+            "plans": _plan_cards(),
             "academy_url": settings.academy_url,
         },
     )
