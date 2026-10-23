@@ -151,6 +151,16 @@ out for every alert event, which was never the deal.
   (Starter: "One text a day: your morning rundown"; Full: "Up to two texts a
   day: your morning rundown, plus one more").
 
+## Slice 13 — YouTube auto-posting (built; runs once the operator connects a Google project)
+| Area | What exists |
+|---|---|
+| Connect | Settings → YouTube. Starter and Full members connect their own channel through Google's consent screen (scopes `youtube.upload` and `youtube.readonly`, so the channel's name can be shown back). It is a YouTube integration, not a partnership. Only a refresh token is stored, encrypted at rest (Fernet; `TC_ENCRYPTION_KEY`). Disconnecting revokes the token at Google, deletes it here, and cancels anything still queued. |
+| Posting | In the clip editor, "Also post this clip to my YouTube channel" reveals the confirm step — title (required), description, and visibility (public, unlisted or private; unlisted by default). Nothing posts before that confirmation, per spec-gaps §8. The upload runs in the background on the outbox pattern (`youtube_jobs`: atomic claim, backoff, 5 attempts), records the YouTube video id and watch URL on the clip, and shows queued / posting / posted / failed-with-reason next to the clip. A failed upload never touches the local clip. |
+| Quota | One upload costs 1,600 of the Google project's 10,000 daily quota units. A site-wide daily counter (`TC_YOUTUBE_DAILY_UPLOADS`, default 6) holds extra posts for the next day instead of letting them fail, and logs each hold. |
+| Switch | Off until `TC_YOUTUBE_CLIENT_ID`, `TC_YOUTUBE_CLIENT_SECRET` and `TC_YOUTUBE_REDIRECT_URI` are all set, the same posture as the AI helper: while off, Settings says so plainly, the clip editor stays silent, and the API answers 503. |
+| Checks | 10 backend tests — connect stores the token encrypted (never plaintext in the database, never in any API response), status, disconnect and revoke, the free-plan tier gate, a confirmed post recording the video id and URL through a fake Google, retry with backoff, a revoked token failing with a reconnect flag, and the daily cap holding the extra post for tomorrow — plus 8 dashboard tests (card states: off, wrong plan, connect, connected, disconnect; the confirm step appearing only after opt-in; posted and failed status display). |
+| Before real posting | **Uploads from a Google project that has not passed Google's verification/audit are forced to private by YouTube**, whatever visibility the member picks. The operator has to finish Google's OAuth verification and the YouTube API compliance audit for the project before members' public and unlisted posts will actually go up public or unlisted. |
+
 ## Plan entitlements (current code)
 | Feature | Free | $3 Starter | $9 Full |
 |---|---|---|---|
@@ -167,7 +177,8 @@ out for every alert event, which was never the deal.
 | Photo part identification | Off until an allowance and budget are approved | Same | Same |
 | Team accounts | Yes | Yes | Yes |
 | Break Room, video clips | Yes | Yes | Yes |
-| Custom domain (CNAME), Google Business Profile sync, time tracking, YouTube auto-posting | Not built in Trade Circle | Advertised, not built | Advertised, not built |
+| Custom domain (CNAME), Google Business Profile sync, time tracking | Not built in Trade Circle | Advertised, not built | Advertised, not built |
+| YouTube auto-posting | No | Yes — connect a channel in Settings, once the site operator has connected the site's Google project | Yes — same |
 | Basic invoicing through Empire | Not connected | Not connected | Not connected |
 
 Nothing in this slice changed an existing entitlement. Unresolved: paid-plan AI allowances, a photo part-lookup allowance and budget, whether invoicing becomes free, and whether the $3 description should list only what works today.

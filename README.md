@@ -53,6 +53,9 @@ Operator commands, run on the server:
 | `TC_AI_MAX_OUTPUT_TOKENS` | `2000` | Upper bound on each answer (thinking included). |
 | `TC_PARTS_MONTHLY_BUDGET`, `TC_PARTS_DAILY_LIMIT`, `TC_PARTS_MONTHLY_LIMIT` | `0` | Photo part identification's own budget and allowance. Off until all are set; manual part-number search always works. |
 | `TC_OUTBOX_WORKER` | `true` | Send queued alerts from inside the app. With Twilio unset, alerts stay queued and expire after 24 hours. |
+| `TC_YOUTUBE_CLIENT_ID`, `TC_YOUTUBE_CLIENT_SECRET`, `TC_YOUTUBE_REDIRECT_URI` | unset | The site's Google Cloud OAuth client for the YouTube integration. Until all three are set, YouTube posting is off and Settings says so. The redirect URI must exactly match the one registered in Google Cloud (for example `https://your-site/api/youtube/callback`). |
+| `TC_YOUTUBE_DAILY_UPLOADS` | `6` | Site-wide cap on YouTube uploads per day. One upload costs 1,600 of the Google project's 10,000 daily quota units; posts past the cap wait and go up the next day instead of failing. |
+| `TC_ENCRYPTION_KEY` | unset | Key that encrypts members' stored YouTube sign-in tokens. Use a Fernet key (`python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`); any other value is hashed into a key. When unset it is derived from `TC_JWT_SECRET`. Changing it makes stored tokens unreadable, so members would need to reconnect their channels. |
 
 ## Tests
 ```bash
