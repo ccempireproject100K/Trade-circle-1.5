@@ -23,7 +23,7 @@ describe("Messaging", () => {
 
   it("lets the recipient accept, decline or block", async () => {
     const calls = fakeApi({
-      "GET /messages/requests": { incoming: [{ id: "r1", member: MEMBER, note: "Hi there", context: "mentoring", status: "pending", created_at: "2026-10-22T00:00:00Z" }], outgoing: [] },
+      "GET /messages/requests": { incoming: [{ id: "r1", member: MEMBER, note: "Hi there", context: "mentoring", status: "pending", created_at: "2026-10-22T17:00:00Z" }], outgoing: [] },
       "GET /messages/conversations": [],
       "POST /messages/requests/r1/decline": { status: "declined" },
     });
