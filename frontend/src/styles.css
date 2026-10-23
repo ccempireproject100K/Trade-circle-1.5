@@ -202,6 +202,32 @@ textarea { min-height: 96px; resize: vertical; }
 .stat { display: block; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text); text-decoration: none; }
 .stat strong { display: block; font-size: 2rem; line-height: 1.1; }
 
+/* Member home: feed-first. One column on phones — My page, work strip, then
+   the feed — and a two-column layout on wide screens (feed left, cards right). */
+.home-layout { display: grid; gap: 16px; grid-template-areas: "mypage" "strip" "feed" "activity" "coming" "plan"; }
+.home-layout .card { margin-bottom: 0; }
+.home-mypage { grid-area: mypage; }
+.home-strip { grid-area: strip; }
+.home-feed { grid-area: feed; min-width: 0; }
+.home-activity { grid-area: activity; }
+.home-coming { grid-area: coming; }
+.home-plan { grid-area: plan; }
+.work-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.work-strip .stat { padding: 10px 12px; font-size: 0.9rem; }
+.work-strip .stat strong { font-size: 1.5rem; }
+.composer-box { display: block; padding: 12px 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); text-decoration: none; }
+.composer-box:hover { border-color: var(--accent); color: var(--text); }
+@media (min-width: 900px) {
+  .home-layout {
+    width: min(1080px, calc(100vw - 32px));
+    margin-left: 50%;
+    transform: translateX(-50%);
+    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-areas: "feed mypage" "feed strip" "feed activity" "feed coming" "feed plan";
+    align-items: start;
+  }
+}
+
 /* --- lists --- */
 .items { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
 .item-message { margin: 8px 0; white-space: pre-line; }

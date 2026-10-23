@@ -161,6 +161,25 @@ out for every alert event, which was never the deal.
 | Checks | 10 backend tests — connect stores the token encrypted (never plaintext in the database, never in any API response), status, disconnect and revoke, the free-plan tier gate, a confirmed post recording the video id and URL through a fake Google, retry with backoff, a revoked token failing with a reconnect flag, and the daily cap holding the extra post for tomorrow — plus 8 dashboard tests (card states: off, wrong plan, connect, connected, disconnect; the confirm step appearing only after opt-in; posted and failed status display). |
 | Before real posting | **Uploads from a Google project that has not passed Google's verification/audit are forced to private by YouTube**, whatever visibility the member picks. The operator has to finish Google's OAuth verification and the YouTube API compliance audit for the project before members' public and unlisted posts will actually go up public or unlisted. |
 
+## Slice 14 — Front door (built)
+| Area | What exists |
+|---|---|
+| Root page | `GET /` is a server-rendered front door (`templates/home.html`, same Jinja + `site.css` pattern as the contractor pages, same CSP): what Trade Circle is, the features that are actually built, pricing, and a homeowners strip. Works logged out, no JavaScript required. Before this slice the root address answered 404. |
+| Pricing | Plan cards are rendered from `tiers.py` (`PLANS` / `FEATURES` / `FREE_FEATURES`), so the front door can only promise what the plan table says is built — Google Business Profile sync, crew sharing and Empire invoicing stay off it. The text policy is stated per plan: free = one weekly update email, Starter = one rundown text a day, Full = up to two texts a day. |
+| Ways in | Header and hero link to `/app/login` and `/app/signup`; homeowners go to `/request`, the public marketplace form. Contractor pages (`/p/<slug>`), the dashboard (`/app`) and `/health` are untouched. No `/privacy` or `/terms` links — those pages don't exist yet. |
+| Checks | Backend tests: `/` renders 200 with the hero, the pricing and the real links, and still renders with every integration configured (Twilio, Resend, Stripe, AI, YouTube, Academy); nothing not-built is advertised; unknown paths and unknown contractor pages still 404. |
+
+## Slice 15 — Feed-first member home (built)
+| Area | What exists |
+|---|---|
+| Front door, signed in | The dashboard home (`/app`) now opens on the community feed, like other social sites: the same `GET /posts` stream and the same `PostCard` component the Community page renders — one feed implementation, not a fork. The Community page keeps its search and filters; home links to it. Before this slice, home led with counts — a control panel, not a front door. |
+| Composer | At the top of the feed: the community page's Share entry as a composer prompt ("Share a project, a lesson, or a question…") plus quick links to the project, lesson, equipment, meetup and job-opening flows. Posting itself still runs through the guided `/share` screens. |
+| My page card | Top of the side column (first on mobile): the member's public page link, **View my page** (opens `/p/<slug>`), **Edit profile**, and copy-link. When the page is hidden, the card leads with that fact and the Profile fix link instead. |
+| Work strip | The old home stats, demoted to a compact strip: new quote requests, follow-ups due (follow-up date today or past, still open), open jobs, and marketplace jobs near you — each a link into its page. Activity, Coming up, the handoff-request banner and the Plan card are unchanged, re-homed around the feed. |
+| Empty feed | No posts yet shows a starter card — welcome, why the feed matters, and first actions (share your first post, complete your profile, host a meetup) — never a blank column. |
+| Layout | CSS grid areas in `styles.css`: phones stack My page → work strip → feed → the rest; wide screens (≥900px) break out to two columns, feed left and cards right. |
+| Checks | 6 new dashboard tests (`test/home.test.jsx` — home had none before): the feed renders posts through the shared cards, the composer links, the My page card and its hidden-page variant, the strip's four counts and links, the empty-feed starter state, and the re-homed activity/coming-up/handoff elements. No backend changes. |
+
 ## Plan entitlements (current code)
 | Feature | Free | $3 Starter | $9 Full |
 |---|---|---|---|

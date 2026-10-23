@@ -51,6 +51,6 @@ export function AuthProvider({ children }) {
 export const useAuth = () => useContext(AuthContext);
 
 // For tests: a signed-in member without network calls.
-export function AuthStubProvider({ children, user = { id: "u1", email: "a@example.com", role: "contractor", tier: "free" } }) {
-  return <AuthContext.Provider value={{ user, profile: { slug: "a", business_name: "Alpha" } }}>{children}</AuthContext.Provider>;
+export function AuthStubProvider({ children, user = { id: "u1", email: "a@example.com", role: "contractor", tier: "free" }, profile = { slug: "a", business_name: "Alpha" } }) {
+  return <AuthContext.Provider value={{ user, profile }}>{children}</AuthContext.Provider>;
 }
