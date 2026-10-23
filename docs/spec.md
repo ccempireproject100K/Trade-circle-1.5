@@ -50,7 +50,11 @@ Added October 23, 2026. Trade Circle is for networking, community and brand buil
 | Starter | $3 | Everything in Free, plus custom domain via CNAME, Google Business Profile sync, time tracking, YouTube auto-post |
 | Full | $9 | Everything in Starter, plus invoicing through Empire, crew sharing, voice onboarding, priority support, monthly profile and Google listing performance report, unlimited lead marketplace, Stripe Connect payments (card-on-file toggle, ACH option, partial payments, save card for next invoice) |
 
-New-lead alerts (email and text) are a paid-plan feature. Free-plan contractors log in to see their leads.
+New-lead alerts are a paid-plan feature: email alerts on both paid plans, and texts capped by plan,
+counted on the platform's calendar day — Starter gets 1 text a day (the morning rundown), Full gets
+up to 2 a day (the rundown plus one more: a new-lead text or the afternoon follow-up reminder,
+whichever comes first). Emails are not capped. Free-plan contractors log in to see their leads, and
+get one weekly update email (Monday morning, only when there's something new).
 
 Billing period is not stated in the dictation; assumed monthly until confirmed.
 

@@ -39,8 +39,11 @@ def test_free_plan_cannot_turn_on_text_alerts(client, signup):
 
 
 def test_paid_plan_gets_email_and_opted_in_text(client, signup, db):
+    # Full plan: the new-lead text is the day's second text (the first is held
+    # for the morning rundown). Starter's single text is the rundown itself —
+    # see test_sms_budget.py.
     headers, user = signup(email="paid@example.com")
-    _set_tier(client, db, user["id"], "starter")
+    _set_tier(client, db, user["id"], "full")
     assert client.put("/api/me/alerts/sms", headers=headers, json={"phone": "(512) 555-0100"}).status_code == 422
     res = client.put("/api/me/alerts/sms", headers=headers, json={"phone": "(512) 555-0100", "consent": True})
     assert res.json()["sms"] == {"phone": "+15125550100", "active": True}

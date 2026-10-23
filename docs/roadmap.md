@@ -95,7 +95,7 @@ Spec: "Job handoffs" in [`spec.md`](spec.md). Rules live in `backend/app/handoff
 
 ## Slice 9 — email alerts and daily summary (built, delivery not yet verified live)
 - Paid-plan lead emails go out through Resend, using the same `RESEND_API_KEY` / `RESEND_FROM_EMAIL` settings as the Mind At Ease site; plain text only, retries and expiry as for texts. Not yet tested against a live Resend account.
-- Daily summary (decided Oct 23): paid plans get one email from 7 AM Central, only when there's something new (community activity and follow-ups due today or overdue; handoff notices are sent as they happen and not repeated). Members can turn it off. Paid members with text alerts on also get at most one afternoon text (from 2 PM) when follow-ups are still due. Free plans: in-app only.
+- Daily summary (decided Oct 23): paid plans get one email from 7 AM Central, only when there's something new (community activity and follow-ups due today or overdue; handoff notices are sent as they happen and not repeated). Members can turn it off. Paid members with text alerts on also get at most one afternoon text (from 2 PM) when follow-ups are still due. Free plans: in-app only. (Slice 12 later put all texts under a per-plan daily budget, made the morning summary a text too, and gave the free plan a weekly update email — see below.)
 
 ## Slice 10 — competitor-gap additions (built; see [`spec-gaps.md`](spec-gaps.md) and [`investigation.md`](investigation.md))
 - **Pay & rates** (Work → Rates): private wage and billing-rate submissions (only the state is kept), statewide comparisons from at least 5 members using figures over 90 days old, ranges with sample size, months and a self-reported label. Publishing is off until the data-sharing review (`TC_RATE_COMPARISONS`). Cost calculator with markup vs margin runs only in the browser.
@@ -122,13 +122,44 @@ Spec: "Job handoffs" in [`spec.md`](spec.md). Rules live in `backend/app/handoff
 | Moderation | Flagging keeps the review public and in the average until a moderator acts. `GET /api/admin/reviews` is the queue (flagged by default); admins hide (off the page and out of the average) and unhide there. Nothing about reviews is tier-gated: they are in `FREE_FEATURES`, on every plan. |
 | Checks | 7 backend tests (too-early and duplicate posts, the won and job-done openings, validation and honeypot, response and edit, other owners locked out, flag → hide → unhide, aggregate math and the rating markup) and 4 dashboard tests (display, respond, flag, empty state). |
 
+## Slice 12 — Text budget and the free weekly update (built)
+
+Owner decision, 2026-10-23: texts are capped per member per day, by plan, and
+the free plan gets one weekly update. Before this slice an instant text went
+out for every alert event, which was never the deal.
+
+- **Budgets** (`tiers.SMS_DAILY_BUDGET`, the single source): Starter 1 text a
+  day, Full 2, free 0 — counted on the TC_TIMEZONE calendar day and claimed
+  atomically in `notify.claim_sms` (a per-member-per-day counter, the same
+  shape as the AI budget claim), so two events racing can't overspend the day.
+  An event over budget still emails and still shows in the app; only the text
+  is skipped. Emails are never capped.
+- **The rundown is the first text.** The daily summary now also queues as a
+  text for paid members who turned texts on, and takes the day's first slot.
+  Instant alert texts (new lead, marketplace choice, handoff, payment) hold
+  one slot back for it — in practice only Full members get them, as their
+  second text. The afternoon follow-up text likewise only goes out while the
+  day's allowance lasts. New-review alerts were never instant and stay that
+  way: they ride the rundown.
+- **Free plan: one weekly update email.** Monday from 7 AM local, the same
+  summary over the last 7 days (community activity, follow-ups due/overdue),
+  only when there's something new, claimed per week like the daily jobs are
+  per day. Never a text. The Settings summary toggle controls it, same as the
+  daily summary on paid plans — a member is on exactly one cadence:
+  free is weekly, paid is daily.
+- Settings copy and plan labels now say what actually happens per plan
+  (Starter: "One text a day: your morning rundown"; Full: "Up to two texts a
+  day: your morning rundown, plus one more").
+
 ## Plan entitlements (current code)
 | Feature | Free | $3 Starter | $9 Full |
 |---|---|---|---|
 | Profile, portfolio, landing page and quote form | Yes | Yes | Yes |
 | Customer reviews on the page (respond and flag from the dashboard) | Yes | Yes | Yes |
-| Leads | Log in to see them | Plus text and email alerts | Plus text and email alerts |
-| Daily summary email and afternoon follow-up text | In-app only | Yes | Yes |
+| Leads | Log in to see them | Plus email alerts | Plus email alerts |
+| Daily summary email | — | Yes | Yes |
+| Weekly update email | Yes | Daily instead | Daily instead |
+| Texts (SMS) | None | 1 a day: the morning rundown | Up to 2 a day: rundown plus one more (new lead or afternoon follow-up) |
 | Community, Supplies, Hiring, mentoring, meetups, handoffs, follow-up tracker | Yes | Yes | Yes |
 | Pay & rates and cost calculator | Yes | Yes | Yes |
 | Part lookup by number | Yes | Yes | Yes |

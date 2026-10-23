@@ -93,8 +93,10 @@ def test_payment_problems_cancellation_and_out_of_order_events(billing_client, s
     post_event(c, event("customer.subscription.deleted", {**sub, "status": "canceled"}, created=300))
     me = c.get("/api/billing", headers=h).json()
     assert me["plan"] == "free" and not me["subscribed"]
-    # Free again: paid features stop.
-    assert c.put("/api/me/alerts/digest", json={"on": True}, headers=h).status_code == 402
+    # Free again: paid features stop (texts are paid-only). The summary toggle
+    # still answers, because on the free plan it controls the weekly update email.
+    assert c.put("/api/me/alerts/sms", json={"phone": "+15125550100", "consent": True}, headers=h).status_code == 402
+    assert c.put("/api/me/alerts/digest", json={"on": True}, headers=h).status_code == 200
 
 
 def test_change_plan_cancel_and_portal(billing_client, stripe, db):

@@ -83,9 +83,12 @@ def test_next_day_only_has_new_activity(db, monkeypatch):
     assert second == 1 and "Meetup moved" in bodies[-1] and "Alpha asked" not in bodies[-1]
 
 
-def test_summary_setting_is_paid_only(client, signup, db):
+def test_summary_setting_can_be_turned_off_on_any_plan(client, signup, db):
+    # The toggle drives the daily summary on paid plans and the weekly update
+    # on the free plan, so every plan can turn its cadence off.
     free, _ = signup()
-    assert client.put("/api/me/alerts/digest", headers=free, json={"on": False}).status_code == 402
+    assert client.get("/api/me/alerts", headers=free).json()["daily_summary"] is True
+    assert client.put("/api/me/alerts/digest", headers=free, json={"on": False}).json()["daily_summary"] is False
     paid, user = signup("Paid Co", trade="plumber")
     client.portal.call(db.users.update_one, {"_id": user["id"]}, {"$set": {"tier": "starter"}})
     assert client.get("/api/me/alerts", headers=paid).json()["daily_summary"] is True
