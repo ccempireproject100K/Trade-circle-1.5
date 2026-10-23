@@ -15,6 +15,7 @@ import httpx
 
 from .deps import now
 from .digest import DIGEST_HOUR, FOLLOW_UP_TEXT_HOUR, local_now, send_daily, send_follow_up_texts, send_weekly
+from . import youtube as youtube_jobs
 
 log = logging.getLogger("trade_circle.outbox")
 
@@ -160,7 +161,9 @@ async def run_forever(db, settings) -> None:
         log.info("Twilio not configured; text alerts stay queued until they expire")
     if email is None:
         log.info("Resend not configured; email alerts stay queued until they expire")
-    if sms is None and email is None:
+    if settings.youtube_ready:
+        log.info("YouTube posting is on; up to %s uploads a day", settings.youtube_daily_uploads)
+    if sms is None and email is None and not settings.youtube_ready:
         return
     summarized_on = texted_on = weeklied_on = None
     try:
@@ -177,6 +180,7 @@ async def run_forever(db, settings) -> None:
                     await send_follow_up_texts(db, settings, here)
                     texted_on = here.date()
                 await deliver_due(db, sms, email)
+                await youtube_jobs.deliver_due(db, settings)
             except Exception:
                 log.exception("outbox pass failed")
             await asyncio.sleep(POLL_SECONDS)

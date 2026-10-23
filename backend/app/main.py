@@ -13,7 +13,7 @@ from .https import HTTPSMiddleware
 from .media import LocalMediaStore
 from .ratelimit import RateLimiter
 from .outbox import run_forever
-from .routers import alerts, auth, billing, breakroom, calendar, community, connect, costing, estimates, handoffs, helper, jobs, marketplace, pages, payments, portfolio, profiles, quotes, rates, referrals, reviews, suppliers, team, timetrack
+from .routers import alerts, auth, billing, breakroom, calendar, community, connect, costing, estimates, handoffs, helper, jobs, marketplace, pages, payments, portfolio, profiles, quotes, rates, referrals, reviews, suppliers, team, timetrack, youtube
 
 
 async def migrate(db) -> None:
@@ -87,6 +87,8 @@ async def ensure_indexes(db) -> None:
     await db.reviews.create_index("lead_id", unique=True)
     await db.reviews.create_index([("owner_id", 1), ("created_at", -1)])
     await db.reviews.create_index([("status", 1), ("created_at", 1)])
+    await db.youtube_jobs.create_index([("status", 1), ("next_attempt_at", 1)])
+    await db.youtube_jobs.create_index([("user_id", 1), ("created_at", -1)])
     await db.audit_log.create_index([("user_id", 1), ("timestamp", -1)])
 
 
@@ -129,7 +131,7 @@ def create_app(settings: Settings | None = None, db=None, today=None, dashboard_
     app.add_middleware(AuditMiddleware)
     app.add_middleware(HTTPSMiddleware)
 
-    for module in (auth, profiles, portfolio, quotes, jobs, alerts, handoffs, community, suppliers, connect, rates, estimates, helper, team, breakroom, billing, payments, referrals, reviews, timetrack, costing, calendar, marketplace, pages):
+    for module in (auth, profiles, portfolio, quotes, jobs, alerts, handoffs, community, suppliers, connect, rates, estimates, helper, team, breakroom, billing, payments, referrals, reviews, timetrack, costing, calendar, marketplace, youtube, pages):
         app.include_router(module.router)
     app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
     app.mount("/media", StaticFiles(directory=media_dir), name="media")

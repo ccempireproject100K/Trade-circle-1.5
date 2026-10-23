@@ -17,7 +17,7 @@ FEATURES = {
     "time_tracking": ("starter", "Time tracking on jobs", True),
     "custom_domain": ("starter", "Your own domain for your page (CNAME)", True),
     "google_business_profile": ("starter", "Google Business Profile sync", False),
-    "youtube_autopost": ("starter", "YouTube auto-posting", False),
+    "youtube_autopost": ("starter", "YouTube auto-posting", True),
     "customer_payments": ("full", "Take card and bank payments from customers (Stripe)", True),
     "marketplace_unlimited": ("full", "Unlimited lead marketplace bids", True),
     "profile_report": ("full", "Monthly profile performance report", True),

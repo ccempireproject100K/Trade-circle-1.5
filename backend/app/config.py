@@ -61,6 +61,21 @@ class Settings:
     parts_monthly_budget: float = 0.0
     parts_daily_limit: int = 0
     parts_monthly_limit: int = 0
+    # Encrypts stored secrets (today: members' YouTube refresh tokens) at rest.
+    # Falls back to the JWT secret when unset; changing it means connected members reconnect.
+    encryption_key: str = ""
+    # YouTube auto-posting (a YouTube integration, not a partnership). Nothing is
+    # posted until the site's Google OAuth client is configured; members then
+    # connect their own channels. One upload costs 1,600 of the project's 10,000
+    # daily quota units, so the default cap keeps the whole site at 6 uploads a day.
+    youtube_client_id: str = ""
+    youtube_client_secret: str = ""
+    youtube_redirect_uri: str = ""
+    youtube_daily_uploads: int = 6
+
+    @property
+    def youtube_ready(self) -> bool:
+        return bool(self.youtube_client_id and self.youtube_client_secret and self.youtube_redirect_uri)
 
     @property
     def email_ready(self) -> bool:
@@ -113,6 +128,11 @@ def load_settings() -> Settings:
         stripe_connect_webhook_secret=os.environ.get("STRIPE_CONNECT_WEBHOOK_SECRET", ""),
         stripe_price_starter=os.environ.get("STRIPE_PRICE_STARTER", ""),
         stripe_price_full=os.environ.get("STRIPE_PRICE_FULL", ""),
+        encryption_key=os.environ.get("TC_ENCRYPTION_KEY", ""),
+        youtube_client_id=os.environ.get("TC_YOUTUBE_CLIENT_ID", ""),
+        youtube_client_secret=os.environ.get("TC_YOUTUBE_CLIENT_SECRET", ""),
+        youtube_redirect_uri=os.environ.get("TC_YOUTUBE_REDIRECT_URI", ""),
+        youtube_daily_uploads=int(os.environ.get("TC_YOUTUBE_DAILY_UPLOADS", "6") or 6),
         parts_monthly_budget=float(os.environ.get("TC_PARTS_MONTHLY_BUDGET", "0") or 0),
         parts_daily_limit=int(os.environ.get("TC_PARTS_DAILY_LIMIT", "0")),
         parts_monthly_limit=int(os.environ.get("TC_PARTS_MONTHLY_LIMIT", "0")),
