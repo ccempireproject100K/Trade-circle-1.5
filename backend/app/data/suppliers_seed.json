@@ -1,0 +1,128 @@
+{
+  "_note": "Starter directory entries. Only facts confirmed from each company's own website on the checked date. Directory entries, not endorsements; no preferred placement. 'unknown' means not confirmed, not 'no'.",
+  "suppliers": [
+    {
+      "name": "ABC Supply Co., Inc.",
+      "website": "https://www.abcsupply.com",
+      "categories": [
+        "roofing",
+        "siding_exteriors",
+        "other"
+      ],
+      "trades": [
+        "roofer",
+        "general_contractor"
+      ],
+      "offers": "Steep slope roofing, low slope roofing, roofing insulation and accessories, stucco, siding, gutters and downspouts, decking and railing, windows and doors, renewable energy products.",
+      "coverage": "multi_branch",
+      "branch_note": "Website states over 1,000 locations in the U.S. and Canada and links to a locations page.",
+      "delivery": "Website mentions a commitment to on-time deliveries and links to a delivery promise page. Details not checked.",
+      "business_account": "Website offers a myABCsupply login and links to a credit application. Whether an account is required to buy was not stated.",
+      "ships_to": "unknown",
+      "sources": [
+        {
+          "url": "https://www.abcsupply.com/",
+          "method": "Official homepage read directly",
+          "checked_on": "2026-10-23"
+        }
+      ]
+    },
+    {
+      "name": "Johnstone Supply",
+      "website": "https://www.johnstonesupply.com",
+      "categories": [
+        "hvac",
+        "plumbing",
+        "tools_equipment"
+      ],
+      "trades": [
+        "hvac",
+        "plumber"
+      ],
+      "offers": "HVAC equipment, HVACR parts, hydronics and plumbing, motors, refrigeration, supplies, testing tools and training, thermostats, ventilation and indoor air quality.",
+      "coverage": "multi_branch",
+      "branch_note": "Website has a store finder listing stores by state and asks buyers to choose a local store to see local price and availability.",
+      "delivery": "unknown",
+      "business_account": "Website has a 'Request Account' link and requires signing in to see local prices and place orders.",
+      "ships_to": "unknown",
+      "sources": [
+        {
+          "url": "https://www.johnstonesupply.com/",
+          "method": "Official homepage read directly",
+          "checked_on": "2026-10-23"
+        }
+      ]
+    },
+    {
+      "name": "Sherwin-Williams",
+      "website": "https://www.sherwin-williams.com",
+      "categories": [
+        "paint_coatings",
+        "flooring"
+      ],
+      "trades": [
+        "painter",
+        "general_contractor"
+      ],
+      "offers": "Interior and exterior paint, primers and stains, professional paint and coatings, floor coverings, concrete coatings, painting equipment.",
+      "coverage": "multi_branch",
+      "branch_note": "Website has a store finder.",
+      "delivery": "Website links to a 'Scheduled Delivery' professional tool. Details not checked.",
+      "business_account": "Website offers a PRO+ program for professionals with registration and a 'Contact a Rep' link. Whether an account is required to buy was not stated.",
+      "ships_to": "unknown",
+      "sources": [
+        {
+          "url": "https://www.sherwin-williams.com/",
+          "method": "Official homepage read directly",
+          "checked_on": "2026-10-23"
+        }
+      ]
+    },
+    {
+      "name": "Graybar",
+      "website": "https://www.graybar.com",
+      "categories": [
+        "electrical"
+      ],
+      "trades": [
+        "electrician"
+      ],
+      "offers": "Electrical supplies, communications and data networking products, security products, commercial lighting and lighting controls.",
+      "coverage": "multi_branch",
+      "branch_note": "Website has individual branch pages; most describe a sales counter with will-call pickup.",
+      "delivery": "At least one branch page mentions a delivery fleet. Confirm with your branch.",
+      "business_account": "unknown",
+      "ships_to": "unknown",
+      "sources": [
+        {
+          "url": "https://www.graybar.com/",
+          "method": "Search results limited to graybar.com branch pages; the site blocked direct reading",
+          "checked_on": "2026-10-23"
+        }
+      ]
+    },
+    {
+      "name": "Ferguson",
+      "website": "https://www.ferguson.com",
+      "categories": [
+        "plumbing"
+      ],
+      "trades": [
+        "plumber"
+      ],
+      "offers": "Residential and commercial plumbing products.",
+      "coverage": "multi_branch",
+      "branch_note": "Website has individual branch pages.",
+      "delivery": "Some branch pages list jobsite delivery and logistics. Confirm with your branch.",
+      "business_account": "unknown",
+      "ships_to": "unknown",
+      "sources": [
+        {
+          "url": "https://www.ferguson.com/",
+          "method": "Search results limited to ferguson.com and corporate.ferguson.com; the site blocked direct reading",
+          "checked_on": "2026-10-23"
+        }
+      ]
+    }
+  ]
+}
