@@ -12,8 +12,8 @@ PLANS = {
 # Feature key -> (lowest plan that includes it, how it's described, built in Trade Circle?).
 # Features that aren't built are listed so plan descriptions stay honest; they're never sold as working.
 FEATURES = {
-    "lead_alerts": ("starter", "Instant text and email alerts for new leads", True),
-    "daily_summary": ("starter", "Daily email summary and afternoon follow-up text", True),
+    "lead_alerts": ("starter", "New-lead email alerts, and texts within your plan's daily text allowance", True),
+    "daily_summary": ("starter", "Daily email summary, and the morning rundown as a text (1 text a day on Starter, up to 2 on Full)", True),
     "time_tracking": ("starter", "Time tracking on jobs", True),
     "custom_domain": ("starter", "Your own domain for your page (CNAME)", True),
     "google_business_profile": ("starter", "Google Business Profile sync", False),
@@ -40,6 +40,16 @@ FREE_FEATURES = [
 # New-lead alerts (email and text). Free-plan contractors log in to see leads.
 ALERTS_TIER = FEATURES["lead_alerts"][0]
 MARKETPLACE_FREE_BIDS = 3
+
+# Texts per member per day, counted on the TC_TIMEZONE calendar day and
+# enforced in app.notify.claim_sms. The morning rundown takes the first text;
+# anything else (a new-lead text, the afternoon follow-up text) goes out only
+# while the day's allowance lasts. Emails are never capped by this.
+SMS_DAILY_BUDGET = {"free": 0, "starter": 1, "full": 2}
+
+
+def sms_budget(user: dict) -> int:
+    return SMS_DAILY_BUDGET.get(user.get("tier", "free"), 0)
 
 
 def has_tier(user: dict, tier: str) -> bool:

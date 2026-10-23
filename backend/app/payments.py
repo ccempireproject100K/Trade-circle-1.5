@@ -17,7 +17,7 @@ import secrets
 
 from .deps import now
 from .notices import notify
-from .notify import queue_alert
+from .notify import queue_alert, sms_day
 
 OPEN = ("open", "partly_paid")
 
@@ -72,7 +72,7 @@ async def _settle(db, settings, slice_: dict, status: str, payment_intent: str |
     if status == "succeeded":
         text = f"{request['customer_name']} paid {money(slice_['amount_cents'])} toward \"{request['description']}\"."
         await notify(db, request["owner_id"], "payment", text, "/payments")
-        await queue_alert(db, request["owner_id"], kind="payment_received", subject=f"Payment received: {money(slice_['amount_cents'])}", text=text, link=f"{settings.public_url}/app/payments", record_id=slice_["_id"])
+        await queue_alert(db, request["owner_id"], kind="payment_received", subject=f"Payment received: {money(slice_['amount_cents'])}", text=text, link=f"{settings.public_url}/app/payments", record_id=slice_["_id"], day=sms_day(settings))
     elif status == "failed":
         await notify(db, request["owner_id"], "payment", f"A bank payment from {request['customer_name']} for {money(slice_['amount_cents'])} didn't go through.", "/payments")
 

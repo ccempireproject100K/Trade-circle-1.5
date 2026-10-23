@@ -14,7 +14,7 @@ from datetime import timedelta
 import httpx
 
 from .deps import now
-from .digest import DIGEST_HOUR, FOLLOW_UP_TEXT_HOUR, local_now, send_daily, send_follow_up_texts
+from .digest import DIGEST_HOUR, FOLLOW_UP_TEXT_HOUR, local_now, send_daily, send_follow_up_texts, send_weekly
 
 log = logging.getLogger("trade_circle.outbox")
 
@@ -162,7 +162,7 @@ async def run_forever(db, settings) -> None:
         log.info("Resend not configured; email alerts stay queued until they expire")
     if sms is None and email is None:
         return
-    summarized_on = texted_on = None
+    summarized_on = texted_on = weeklied_on = None
     try:
         while True:
             try:
@@ -170,6 +170,9 @@ async def run_forever(db, settings) -> None:
                 if email is not None and summarized_on != here.date() and here.hour >= DIGEST_HOUR:
                     await send_daily(db, settings, here)
                     summarized_on = here.date()
+                if email is not None and weeklied_on != here.date() and here.hour >= DIGEST_HOUR:
+                    await send_weekly(db, settings, here)
+                    weeklied_on = here.date()
                 if sms is not None and texted_on != here.date() and here.hour >= FOLLOW_UP_TEXT_HOUR:
                     await send_follow_up_texts(db, settings, here)
                     texted_on = here.date()

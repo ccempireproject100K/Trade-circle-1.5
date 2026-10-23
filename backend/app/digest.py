@@ -1,13 +1,21 @@
-"""Daily email summary for paid plans.
+"""Daily summary for paid plans, weekly update for the free plan.
 
 Once a day (from DIGEST_HOUR local time) each paid-plan member who has
 something new gets one email: community activity since the last summary
 (message requests, messages, meetup changes) and follow-ups due today or
-overdue. Handoff notices already go out as they happen, so they aren't repeated. Free-plan members see the same things in the app only.
-Instant lead alerts are separate and unchanged.
+overdue. Handoff notices already go out as they happen, so they aren't repeated.
 
-In the afternoon (from FOLLOW_UP_TEXT_HOUR) paid members who turned on text
-alerts get at most one text if follow-ups due today or overdue are still open.
+Texts follow the per-plan daily budget (tiers.SMS_DAILY_BUDGET, decided
+2026-10-23): the rundown is also queued as a text for paid members who
+turned texts on, and it takes the first text of the day. Instant alert texts
+(app.notify) hold one slot back for it, and the afternoon follow-up text
+(from FOLLOW_UP_TEXT_HOUR, when follow-ups due today or overdue are still
+open) only goes out while the day's allowance lasts.
+
+Free-plan members get the same summary as one email a week instead: Monday
+from DIGEST_HOUR local time, over the last 7 days of activity, only when
+there's something new. No texts on the free plan, ever. A member is on
+exactly one cadence: free is weekly, paid is daily.
 """
 import logging
 from datetime import datetime, timedelta
@@ -16,13 +24,14 @@ from zoneinfo import ZoneInfo
 from pymongo.errors import DuplicateKeyError
 
 from .deps import now
-from .notify import _message
-from .tiers import ALERTS_TIER, TIER_ORDER
+from .notify import _message, claim_sms
+from .tiers import ALERTS_TIER, TIER_ORDER, sms_budget
 
 log = logging.getLogger("trade_circle.digest")
 
 DIGEST_HOUR = 7
 FOLLOW_UP_TEXT_HOUR = 14
+WEEKLY_WEEKDAY = 0  # Monday
 OPEN = ["waiting", "followed_up"]
 
 
@@ -39,8 +48,8 @@ async def _claim_day(db, day: str, job: str = "daily_digest") -> bool:
     return True
 
 
-def compose(name: str, notes: list[dict], due_today: list[dict], overdue: list[dict], public_url: str) -> tuple[str, str]:
-    lines = [f"Good morning, {name}. Here's your Trade Circle summary.", ""]
+def compose(name: str, notes: list[dict], due_today: list[dict], overdue: list[dict], public_url: str, weekly: bool = False) -> tuple[str, str]:
+    lines = [f"Good morning, {name}. Here's your Trade Circle {'week' if weekly else 'summary'}.", ""]
     if due_today or overdue:
         lines.append("Follow-ups")
         for e in overdue[:10]:
@@ -55,7 +64,8 @@ def compose(name: str, notes: list[dict], due_today: list[dict], overdue: list[d
         if len(notes) > 15:
             lines.append(f"  - and {len(notes) - 15} more")
         lines += [f"  {public_url}/app/", ""]
-    lines.append(f"You get this once a day on your plan. Turn it off in Settings: {public_url}/app/settings")
+    cadence = "once a week on the free plan" if weekly else "once a day on your plan"
+    lines.append(f"You get this {cadence}. Turn it off in Settings: {public_url}/app/settings")
     parts = []
     if due_today or overdue:
         parts.append(f"{len(due_today) + len(overdue)} follow-up{'s' if len(due_today) + len(overdue) != 1 else ''}")
@@ -91,6 +101,11 @@ async def send_daily(db, settings, local_now: datetime) -> int:
         profile = await db.profiles.find_one({"owner_id": user["_id"]}, {"business_name": 1})
         subject, body = compose(profile["business_name"] if profile else "there", notes, due_today, overdue, settings.public_url)
         await db.outbox.insert_one(_message(user["_id"], "email", user["email"], body, f"digest:{day}", subject=subject, kind="daily_digest"))
+        # The rundown is also the day's first text for members who turned texts on.
+        sms = user.get("alert_sms") or {}
+        if sms.get("phone") and sms.get("active") and await claim_sms(db, user["_id"], day, sms_budget(user), rundown=True):
+            text = f"{subject}. {settings.public_url}/app/ Reply STOP to opt out."
+            await db.outbox.insert_one(_message(user["_id"], "sms", sms["phone"], text, f"digest:{day}", kind="daily_digest"))
         queued += 1
     log.info("daily summary %s: %d queued", day, queued)
     return queued
@@ -100,8 +115,47 @@ def _paid_tiers() -> list[str]:
     return [t for t, rank in TIER_ORDER.items() if rank >= TIER_ORDER[ALERTS_TIER]]
 
 
+async def send_weekly(db, settings, local_now: datetime) -> int:
+    """Queue Monday's weekly update for free-plan members. Returns how many were queued.
+
+    The free plan's one outside update: an email (never a text) covering the
+    last 7 days of community activity and follow-ups due or overdue, only when
+    there's something new. Paid members are not on this cadence — they get the
+    daily summary instead. The week is claimed like the daily jobs, keyed by
+    its Monday, so a restart or a second worker can't send it twice.
+    """
+    if local_now.weekday() != WEEKLY_WEEKDAY or not due(local_now):
+        return 0
+    monday = (local_now.date() - timedelta(days=local_now.weekday())).isoformat()
+    if not await _claim_day(db, monday, "weekly_digest"):
+        return 0
+    day = local_now.date().isoformat()
+    queued = 0
+    # Same cutoff discipline as the daily run: one stamp, taken before reading.
+    stamp = now()
+    cutoff = stamp.replace(microsecond=stamp.microsecond // 1000 * 1000) - timedelta(milliseconds=1)
+    async for user in db.users.find({"tier": "free", "disabled": {"$ne": True}, "digest_email": {"$ne": False}}):
+        since = user.get("weekly_last_at") or user.get("created_at")
+        query = {"user_id": user["_id"], "read": False, "kind": {"$not": {"$regex": "^handoff"}}, "created_at": {"$lte": cutoff}}
+        if since:
+            query["created_at"]["$gt"] = since
+        notes = await db.notifications.find(query).sort("created_at", 1).to_list(200)
+        entries = await db.quotes.find({"owner_id": user["_id"], "status": {"$in": OPEN}, "follow_up_on": {"$lte": day, "$ne": None}}).sort("follow_up_on", 1).to_list(100)
+        due_today = [e for e in entries if e["follow_up_on"] == day]
+        overdue = [e for e in entries if e["follow_up_on"] < day]
+        await db.users.update_one({"_id": user["_id"]}, {"$set": {"weekly_last_at": cutoff}})
+        if not (notes or due_today or overdue):
+            continue
+        profile = await db.profiles.find_one({"owner_id": user["_id"]}, {"business_name": 1})
+        subject, body = compose(profile["business_name"] if profile else "there", notes, due_today, overdue, settings.public_url, weekly=True)
+        await db.outbox.insert_one(_message(user["_id"], "email", user["email"], body, f"weekly:{monday}", subject=subject, kind="weekly_digest"))
+        queued += 1
+    log.info("weekly update %s: %d queued", monday, queued)
+    return queued
+
+
 async def send_follow_up_texts(db, settings, local_now: datetime) -> int:
-    """One afternoon text, if follow-ups due today or overdue are still open. Returns how many were queued."""
+    """One afternoon text, if follow-ups due today or overdue are still open and the day's text allowance lasts. Returns how many were queued."""
     if local_now.hour < FOLLOW_UP_TEXT_HOUR:
         return 0
     day = local_now.date().isoformat()
@@ -112,6 +166,8 @@ async def send_follow_up_texts(db, settings, local_now: datetime) -> int:
         entries = await db.quotes.find({"owner_id": user["_id"], "status": {"$in": OPEN}, "follow_up_on": {"$lte": day, "$ne": None}}).sort("follow_up_on", 1).to_list(20)
         if not entries:
             continue
+        if not await claim_sms(db, user["_id"], day, sms_budget(user)):
+            continue  # the day's texts are spent (the rundown, an instant text)
         names = ", ".join(e["name"] for e in entries[:3]) + (f" and {len(entries) - 3} more" if len(entries) > 3 else "")
         count = f"{len(entries)} follow-up{'s' if len(entries) != 1 else ''}"
         body = f"Trade Circle: {count} still due ({names}). {settings.public_url}/app/inbox Reply STOP to opt out."
