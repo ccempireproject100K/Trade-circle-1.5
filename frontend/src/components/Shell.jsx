@@ -18,13 +18,16 @@ export default function Shell({ children }) {
   const { pathname } = useLocation();
   return (
     <div className="shell">
-      <header className="topbar">
-        <span className="brand">Trade Circle</span>
-        <span className="topbar-name">{profile?.business_name}</span>
-        <NavLink to="/break-room" className="topbar-link">Break Room</NavLink>
-        <NavLink to="/messages" className="topbar-link">Messages</NavLink>
-        <NavLink to="/settings" className="topbar-link">Settings</NavLink>
-      </header>
+      <div className="topbar-wrap">
+        <header className="topbar">
+          <span className="brand">Trade Circle</span>
+          <span className="topbar-name">{profile?.business_name}</span>
+          <NavLink to="/break-room" className="topbar-link">Break Room</NavLink>
+          <NavLink to="/messages" className="topbar-link">Messages</NavLink>
+          <NavLink to="/settings" className="topbar-link">Settings</NavLink>
+        </header>
+        <div className="brand-stripe" aria-hidden="true" />
+      </div>
       {acting.get() && (
         <p className="acting-bar" role="status">
           Working for <strong>{acting.get().name}</strong> ·{" "}

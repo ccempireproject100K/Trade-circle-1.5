@@ -15,7 +15,7 @@ const SECTION_NAMES = {
   service_area: "Service area",
   quote: "Quote form",
 };
-const DEFAULT_COLOR = "#1F4E79";
+const DEFAULT_COLOR = "#4A2F1B";
 
 function DetailsForm({ profile, trades, onSaved }) {
   const initial = Object.fromEntries(TEXT_FIELDS.map((k) => [k, profile[k] || ""]));

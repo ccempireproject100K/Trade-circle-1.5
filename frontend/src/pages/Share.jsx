@@ -73,6 +73,7 @@ export function ShareChooser() {
         <Link className="choice" to="/share/meetup"><strong>Local meetup</strong><span className="small muted">Post a simple get-together for contractors near you.</span></Link>
         <Link className="choice" to="/share/opening"><strong>Job opening</strong><span className="small muted">Hiring? Post a position for tradespeople near you.</span></Link>
         <Link className="choice" to="/share/spot"><strong>Suggest a spot or deal</strong><span className="small muted">A lunch place, supply-house breakfast or deal other contractors would like.</span></Link>
+        <Link className="choice" to="/share/starting_out"><strong>Starting out</strong><span className="small muted">A starter tip, a get-together for new owners, or a hand offered to someone in their first year.</span></Link>
         <Link className="choice" to="/supplies"><strong>Supplies question</strong><span className="small muted">Ask where to find materials or share a supplier experience.</span></Link>
       </div>
     </>

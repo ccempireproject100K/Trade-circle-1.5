@@ -1,13 +1,16 @@
 /* Trade Circle dashboard. Mobile-first: bottom tab bar on phones, centered column on desktop. */
 :root {
-  --bg: #f4f5f7;
-  --card: #ffffff;
-  --text: #16181d;
-  --muted: #5d6470;
-  --line: #dfe2e7;
-  --accent: #1f4e79;
+  --bg: #faf3e3;
+  --card: #fffdf6;
+  --text: #33241a;
+  --muted: #77644f;
+  --line: #e3d3ae;
+  --accent: #4a2f1b;
+  --accent-dark: #3a2413;
   --accent-text: #ffffff;
-  --ok: #1d7a46;
+  --gold: #f2c230;
+  --yellow: #ffb800;
+  --ok: #4a2f1b;
   --warn: #9a5b00;
   --bad: #b3261e;
   --radius: 14px;
@@ -16,14 +19,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #111317;
-    --card: #1b1e24;
-    --text: #eef0f3;
-    --muted: #a3a9b4;
-    --line: #2c3038;
-    --accent: #6ea8dc;
-    --accent-text: #0b1520;
-    --ok: #4cc37f;
+    --bg: #241a10;
+    --card: #33241a;
+    --text: #f7efdb;
+    --muted: #c4ab84;
+    --line: #57432c;
+    --accent: #d9a45b;
+    --accent-dark: #b57f3e;
+    --accent-text: #241708;
+    --ok: #d9a45b;
     --warn: #e5a73b;
     --bad: #f07b72;
   }
@@ -49,16 +53,36 @@ h3 { font-size: 1rem; margin: 0; }
 /* --- shell --- */
 .shell { min-height: 100vh; padding-bottom: 72px; }
 
-.topbar {
+/* Header and the brand stripe stick together: a cream header over a dark
+   wood-grain band with a thin gold line — the same .brand-stripe motif as
+   the public pages. The grain layers are sized to the stripe's top 8px;
+   the gold shows through underneath. */
+.topbar-wrap {
   position: sticky;
   top: 0;
   z-index: 2;
+}
+
+.brand-stripe {
+  height: 11px;
+  background-color: var(--gold);
+  background-image:
+    repeating-linear-gradient(93deg, rgba(0, 0, 0, 0.22) 0 2px, transparent 2px 23px),
+    repeating-linear-gradient(93deg, rgba(255, 243, 214, 0.06) 0 1px, transparent 1px 15px),
+    repeating-linear-gradient(93deg, #3e2716 0 18px, #4a2f1b 18px 36px, #46311e 36px 54px, #3a2413 54px 72px);
+  background-size: 100% 8px;
+  background-repeat: repeat-x;
+  background-position: top left;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.topbar {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  background: var(--accent);
-  color: var(--accent-text);
+  background: var(--card);
+  color: var(--text);
 }
 
 .brand { font-weight: 800; letter-spacing: 0.01em; }
@@ -91,7 +115,7 @@ h3 { font-size: 1rem; margin: 0; }
 
 @media (min-width: 900px) {
   .shell { padding-bottom: 0; }
-  .tabbar { position: sticky; top: 46px; inset: auto; justify-content: center; border-top: 0; border-bottom: 1px solid var(--line); }
+  .tabbar { position: sticky; top: 55px; inset: auto; justify-content: center; border-top: 0; border-bottom: 1px solid var(--line); }
   .tabbar a { flex: 0 0 auto; padding: 12px 20px; }
   .tabbar a.active { box-shadow: inset 0 -3px 0 var(--accent); }
 }
@@ -155,6 +179,7 @@ textarea { min-height: 96px; resize: vertical; }
 
 .btn:disabled { opacity: 0.6; cursor: default; }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-dark); border-color: var(--accent-dark); }
 .btn-danger { color: var(--bad); }
 .btn-small { min-height: 36px; padding: 0 12px; font-size: 0.9rem; }
 .btn-icon { min-height: 36px; width: 36px; padding: 0; }
@@ -270,6 +295,7 @@ textarea { min-height: 96px; resize: vertical; }
 /* --- auth --- */
 .auth { max-width: 420px; margin: 0 auto; padding: 32px 16px; }
 .brand-lg { text-align: center; color: var(--accent); }
+.auth-art { display: block; width: 200px; height: auto; border-radius: var(--radius); margin: 0 auto 16px; }
 .auth-switch { text-align: center; }
 
 /* --- section tabs --- */

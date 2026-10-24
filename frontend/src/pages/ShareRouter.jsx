@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import GuidedPost, { FLOWS, ShareChooser } from "./Share.jsx";
-import { ShareEquipment, ShareMeetup, ShareOpening, ShareSpot } from "./ShareForms.jsx";
+import { ShareEquipment, ShareMeetup, ShareOpening, ShareSpot, ShareStartingOut } from "./ShareForms.jsx";
 
 // /share picks what to share; each kind has its own screen.
 export default function ShareRouter() {
@@ -10,5 +10,6 @@ export default function ShareRouter() {
   if (kind === "meetup") return <ShareMeetup />;
   if (kind === "opening") return <ShareOpening />;
   if (kind === "spot") return <ShareSpot />;
+  if (kind === "starting_out") return <ShareStartingOut />;
   return <ShareChooser />;
 }

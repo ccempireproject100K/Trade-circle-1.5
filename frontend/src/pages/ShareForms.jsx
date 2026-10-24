@@ -233,6 +233,28 @@ export function ShareOpening() {
   );
 }
 
+export function ShareStartingOut() {
+  const [f, setF] = useState({ title: "", body: "" });
+  const [tags, setTags] = useState([]);
+  const set = (key) => (e) => setF({ ...f, [key]: e.target.value });
+  const [submit, error] = usePostSubmit(() => ({
+    kind: "starting_out", title: f.title, body: f.body, trade_tags: tags,
+  }));
+  return (
+    <form className="stack" onSubmit={submit}>
+      <h1>Starting out</h1>
+      <p className="small muted" style={{ margin: 0 }}>The new-business lane: a starter tip from your first year, a meetup for new owners, or an offer to mentor one. New owners are reading.</p>
+      <section className="card stack">
+        <Field label="Headline"><input required maxLength={140} value={f.title} onChange={set("title")} placeholder="What I wish I'd known in year one" /></Field>
+        <Field label="Tell it plain"><textarea maxLength={10000} value={f.body} onChange={set("body")} placeholder="A tip, a get-together, or a hand offered to someone starting out." /></Field>
+        <TradeTags value={tags} onChange={setTags} />
+        <Notice error={error} />
+        <button className="btn btn-primary">Post</button>
+      </section>
+    </form>
+  );
+}
+
 export function ShareSpot() {
   const [f, setF] = useState({ title: "", body: "", place: "", suggestion: "spot", link: "", connection: "", connection_detail: "", location: savedArea.get().near });
   const set = (key) => (e) => setF({ ...f, [key]: e.target.value });

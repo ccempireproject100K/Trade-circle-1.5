@@ -26,6 +26,7 @@ export default function Login() {
   return (
     <main className="auth">
       <h1 className="brand-lg">Trade Circle</h1>
+      <img className="auth-art" src="/static/img/hero.webp" alt="Cartoon illustration of five smiling contractors from different trades waving hello" width="1920" height="1280" />
       <form className="card stack" onSubmit={submit}>
         <h2>Sign in</h2>
         <Field label="Email">

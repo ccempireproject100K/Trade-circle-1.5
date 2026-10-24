@@ -13,6 +13,7 @@ const FILTERS = [
   { key: "equipment,equipment_question", label: "Equipment" },
   { key: "meetup", label: "Meetups" },
   { key: "opening", label: "Hiring" },
+  { key: "starting_out", label: "Starting Out" },
   { key: "supply_question,supplier_review,supplier_suggestion", label: "Supplies" },
 ];
 

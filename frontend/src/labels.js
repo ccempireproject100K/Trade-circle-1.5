@@ -27,6 +27,7 @@ export const KIND_NAMES = {
   meetup: "Meetup",
   opening: "Hiring",
   spot: "Member recommendation",
+  starting_out: "Starting Out",
 };
 
 export const EMPLOYMENT_TYPES = { full_time: "Full time", part_time: "Part time", seasonal: "Seasonal", apprenticeship: "Apprenticeship", temporary: "Temporary" };
