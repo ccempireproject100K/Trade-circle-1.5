@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, label, shortDate, uploadPhoto } from "../api.js";
 import { CATEGORY_NAMES, EXPERIENCE_NAMES, KIND_NAMES, REPORT_REASONS } from "../labels.js";
+import { PostCheer } from "./Cheers.jsx";
 import { Notice } from "./Form.jsx";
 import { YouTubeClipPanel } from "./YouTube.jsx";
 
@@ -11,6 +12,7 @@ export function Author({ author, when }) {
     <span className="small muted">
       {author.slug ? <a href={`/p/${author.slug}`} target="_blank" rel="noreferrer">{author.business_name}</a> : author.business_name}
       {author.trade && ` · ${label(author.trade)}`}
+      {author.banked > 0 && <span title="Banked cheers — lifetime earned"> · 🎉 {author.banked}</span>}
       {when && ` · ${shortDate(when)}`}
     </span>
   );
@@ -59,7 +61,10 @@ export function PostCard({ post }) {
       )}
       <div className="row-between">
         <Author author={post.author} when={post.published_at || post.created_at} />
-        <Link className="small" to={`/posts/${post.id}`}>{post.comment_count} {post.comment_count === 1 ? "reply" : "replies"}</Link>
+        <span className="row" style={{ gap: 12 }}>
+          <PostCheer post={post} />
+          <Link className="small" to={`/posts/${post.id}`}>{post.comment_count} {post.comment_count === 1 ? "reply" : "replies"}</Link>
+        </span>
       </div>
     </li>
   );

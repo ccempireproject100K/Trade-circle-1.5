@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, label } from "../api.js";
+import { CheerButton, PostCheer } from "../components/Cheers.jsx";
 import { Author, PostBadges, ReportButton } from "../components/Community.jsx";
 import { Field, Notice } from "../components/Form.jsx";
 import MessageRequest from "../components/MessageRequest.jsx";
@@ -204,6 +205,10 @@ export default function PostDetail() {
         <PostBody post={post} />
         <div className="row" style={{ marginTop: 10 }}>
           {!post.mine && <MessageRequest member={post.author} context="post" postId={post.id} />}
+          {post.status === "published" && <PostCheer post={post} />}
+          {!post.mine && post.author.slug && (
+            <CheerButton toSlug={post.author.slug}>🎉 Cheer {post.author.business_name}</CheerButton>
+          )}
           {post.mine ? (
             <>
               {["project", "lesson"].includes(post.kind) && <Link className="btn btn-small" to={`/share/${post.kind}/${post.id}`}>Edit</Link>}

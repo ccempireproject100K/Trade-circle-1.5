@@ -246,6 +246,10 @@ export default function Settings() {
         <button type="button" className="btn" onClick={async () => { await logout(); navigate("/login"); }}>Sign out</button>
         <button type="button" className="btn btn-danger" onClick={signOutEverywhere}>Sign out everywhere</button>
       </section>
+      <section className="card row">
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+      </section>
     </>
   );
 }

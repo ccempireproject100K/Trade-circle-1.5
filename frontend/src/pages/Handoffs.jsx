@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api, dollars, label, localToday, shortDate } from "../api.js";
+import { CheerButton } from "../components/Cheers.jsx";
 import { Field, Notice } from "../components/Form.jsx";
 
 // The handoff week runs on Trade Circle's time zone, so show the reset in that zone with its label.
@@ -184,6 +185,12 @@ function HandoffCard({ h, onAction }) {
         </p>
       )}
       {h.end_reason && <p className="small" style={{ margin: "6px 0 0" }}>Reason: {h.end_reason}</p>}
+      {h.cheer_prompt && (
+        <p className="small" style={{ margin: "8px 0 0" }}>
+          Your cover had your back. <CheerButton handoffId={h.id}>Send {h.to.business_name} a cheer 🎉</CheerButton>
+        </p>
+      )}
+      {h.cheer_sent && <p className="small muted" style={{ margin: "8px 0 0" }}>🎉 You cheered {h.to.business_name} for this one.</p>}
       {pendingCancel && (
         <p className="notice notice-error small" style={{ marginTop: 8 }}>
           {h.direction === "incoming" ? `${h.from.business_name} asked to cancel: ` : "You asked to cancel, waiting for their answer: "}

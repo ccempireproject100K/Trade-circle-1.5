@@ -122,9 +122,9 @@ def test_home_page_is_the_front_door(client):
     assert "Google Business Profile sync" not in html
     assert "Crew sharing" not in html
     assert "Invoicing through Empire" not in html
-    # No /privacy or /terms pages exist yet, so the page must not link to them.
-    assert 'href="/privacy"' not in html
-    assert 'href="/terms"' not in html
+    # The shared footer links the legal pages (built; see test_legal.py).
+    assert 'href="/privacy"' in html
+    assert 'href="/terms"' in html
     assert "© Mind At Ease Solutions" in html
     csp = res.headers["content-security-policy"]
     assert "script-src 'self'" in csp and "frame-ancestors 'none'" in csp

@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
+from .. import legal
+from ..cheers import banked_count
 from ..deps import get_db, today
 from ..models import TRADES
 from ..profiles import DEFAULT_BRAND_COLOR, full_view, landing_view, text_color_on
@@ -79,6 +81,8 @@ async def _render(request: Request, db, slug: str, layer: str) -> HTMLResponse:
     else:
         page = landing_view(profile, portfolio, today(request), settings.recert_banner_days)
         page["reviews"] = await summary_for(db, profile["owner_id"], latest=3)
+    # Banked cheers (lifetime earned) stand beside the reviews — the standing a homeowner reads.
+    page["cheers_banked"] = await banked_count(db, profile["owner_id"])
     brand = page["brand_color"] or DEFAULT_BRAND_COLOR
     trade_label = TRADE_LABELS.get(page["trade"], page["trade"])
     response = templates.TemplateResponse(
@@ -179,6 +183,41 @@ async def home_page(request: Request):
     response.headers["Content-Security-Policy"] = PAGE_CSP
     response.headers["Cache-Control"] = "public, max-age=60"
     return response
+
+
+# --- the legal pages -------------------------------------------------------
+# Public on purpose: members, reviewers and ad networks read these without an
+# account. The texts live in app/legal/ and render from the app settings, so
+# the entity and contact block follow TC_LEGAL_* without a code change.
+_LEGAL_TITLES = {"privacy": "Privacy Policy", "terms": "Terms of Service"}
+
+
+def _legal_page(request: Request, name: str) -> HTMLResponse:
+    settings = request.app.state.settings
+    response = templates.TemplateResponse(
+        request,
+        "legal.html",
+        {
+            "title": _LEGAL_TITLES[name],
+            "content": legal.render(name, settings),
+            "brand": DEFAULT_BRAND_COLOR,
+            "brand_text": text_color_on(DEFAULT_BRAND_COLOR),
+            "academy_url": settings.academy_url,
+        },
+    )
+    response.headers["Content-Security-Policy"] = PAGE_CSP
+    response.headers["Cache-Control"] = "public, max-age=60"
+    return response
+
+
+@router.get("/privacy", response_class=HTMLResponse)
+async def privacy_page(request: Request):
+    return _legal_page(request, "privacy")
+
+
+@router.get("/terms", response_class=HTMLResponse)
+async def terms_page(request: Request):
+    return _legal_page(request, "terms")
 
 
 @router.get("/p/{slug}", response_class=HTMLResponse)

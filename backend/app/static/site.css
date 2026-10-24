@@ -322,3 +322,15 @@ a { color: inherit; }
 .review-form .star-choice { display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; min-height: 44px; font-size: 1.1rem; }
 .review-form textarea { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--text); font: inherit; font-size: 16px; }
 .review-shown { margin-top: 12px; }
+
+/* --- legal pages (/privacy, /terms) --- */
+/* Long-form reading inside the front-door card: roomier leading, headings
+   that carry the section structure, and nothing wider than the column. */
+.legal-doc { line-height: 1.65; overflow-wrap: break-word; }
+.legal-doc h1 { margin: 0 0 14px; font-size: 1.55rem; line-height: 1.25; }
+.legal-doc h2 { margin: 26px 0 8px; font-size: 1.18rem; }
+.legal-doc h3 { margin: 20px 0 6px; font-size: 1.05rem; }
+.legal-doc p { margin: 0 0 12px; }
+.legal-doc ul { margin: 0 0 12px; padding-left: 22px; }
+.legal-doc li { margin: 0 0 6px; }
+.legal-doc hr { border: 0; border-top: 1px solid var(--line); margin: 20px 0; }
