@@ -180,6 +180,19 @@ out for every alert event, which was never the deal.
 | Layout | CSS grid areas in `styles.css`: phones stack My page → work strip → feed → the rest; wide screens (≥900px) break out to two columns, feed left and cards right. |
 | Checks | 6 new dashboard tests (`test/home.test.jsx` — home had none before): the feed renders posts through the shared cards, the composer links, the My page card and its hidden-page variant, the strip's four counts and links, the empty-feed starter state, and the re-homed activity/coming-up/handoff elements. No backend changes. |
 
+## Slice 16 — Strong yellow, dark brown & wood-grain retheme (built, final)
+| Area | What exists |
+|---|---|
+| Palette | The Facebook-blue platform theme is gone, and so is the green of the first retheme draft (owner ruling 2026-10-23: green removed altogether). Both surfaces run on strong yellow + dark brown: dark brown `#4A2F1B` (hover `#3A2413`) for buttons, links and accents, bold work yellow `#FFB800` as the loud accent and front-door hero band, warm cream `#FAF3E3` backgrounds, `#FFFDF6` cards, `#33241A` text, `#E3D3AE` borders. Dark mode follows the same warm brown family. Success/`--ok` is the dark brown primary — readable via text and icon, not color. |
+| Wood grain & stripe | The brand stripe is a dark wood-grain band over a thin gold (`#F2C230`) line — layered repeating-linear-gradients in dark browns (`#3E2716`/`#4A2F1B`/`#46311E`/`#3A2413`) with darker streak lines and an inset shadow — implemented once per surface as a `.brand-stripe` CSS class: under the front-door site header, at the front-door hero's foot, and under the dashboard shell header. The front-door site header itself wears the wood grain with cream (`#FFF3D6`) text and work-yellow nav buttons; the dashboard header stays cream with the wood stripe under it. |
+| Hero | The crew illustration is a faded backdrop inside the bold-yellow hero band — absolutely positioned behind the headline and both calls to action ("Create your free page", "Post a job") at low opacity, so the words stay perfectly readable. The handoff and homeowner illustrations remain small miniature spots in their feature cards, and the crew art still sits atop the dashboard login/signup pages. |
+| Tagline | The front door's title and headline read "the community and work network for contractors and small businesses alike" (owner's exact words, 2026-10-23). |
+| Illustrations | Three cartoon illustrations (a crew of contractors, a handshake handoff by a work van, a homeowner leaving a five-star review), redrawn green-free in maroon, gold, charcoal, denim and brown. Git mirroring can only carry text, so each WebP is stored as base64 text in `backend/app/static/img/<name>.webp.b64` and served decoded at `/static/img/<name>.webp` with a one-year immutable cache; the served bytes are verified byte-identical to the encoded artwork. |
+| Brand default | The platform default brand color (`DEFAULT_BRAND_COLOR`, the marketplace request templates, and the profile editor's default) is now the dark brown `#4A2F1B` (white reads on it per `text_color_on`). Contractors' own stored brand colors are untouched. |
+| Checks | Backend tests: the front door carries the final tagline in its `<title>` and `<h1>` and uses the hero backdrop (no side-by-side hero art); the front door references all three illustrations; each serves 200 as a real WebP (RIFF header) byte-identical to the encoded file, with the long cache header, and an unknown name 404s. Front-door content assertions otherwise unchanged and still pass. |
+| Owner adjustments (2026-10-23, after the final build) | Four follow-ups from the owner's look at the finished page. (1) Hero art: the crew now stands in front of a small mom-and-pop storefront (sign reads "MOM & POP'S"); same base64 mechanism, byte-verified by sha256 (`66714d01…`). (2) Plan text copy: each pricing card states ONLY its own text allowance — Free "No texts — a weekly update by email.", Starter "You get one text a day.", Full "You get two texts a day." — and the tiers.py rundown label no longer cross-references plans. (3) Uniformity: "What you get" is three headed groups in plan order — "On every free page", "Starter adds", "Full adds" — with the scattered per-feature Starter/Full badges removed. (4) A compact "Just starting out?" card sits with the audience sections (after "For homeowners", before pricing): free page as first storefront, marketplace bids for first customers, pricing help from pay & rates/calculator, overflow handoffs — and the community's new **Starting Out** lane. |
+| Starting Out lane | A dedicated community post kind (`starting_out`, plain title/body/tags posts like the other simple kinds): starter tips, new-owner meetups, mentor offers and requests. Wired through the same machinery as every kind — backend `Kind` + fields map + `/api/community/meta` + `?kind=` feed filter, SPA `KIND_NAMES`, a "Starting Out" filter chip on Community, a `/share/starting_out` form, and a Share chooser entry. The front door's new-businesses section names it. Tests cover post create + kind filter + meta. |
+
 ## Plan entitlements (current code)
 | Feature | Free | $3 Starter | $9 Full |
 |---|---|---|---|
@@ -196,7 +209,7 @@ out for every alert event, which was never the deal.
 | Photo part identification | Off until an allowance and budget are approved | Same | Same |
 | Team accounts | Yes | Yes | Yes |
 | Break Room, video clips | Yes | Yes | Yes |
-| Custom domain (CNAME), Google Business Profile sync, time tracking | Not built in Trade Circle | Advertised, not built | Advertised, not built |
+| Portable page (member-hosted under their own domain), Google Business Profile sync, time tracking | Not built in Trade Circle | Advertised, not built | Advertised, not built |
 | YouTube auto-posting | No | Yes — connect a channel in Settings, once the site operator has connected the site's Google project | Yes — same |
 | Basic invoicing through Empire | Not connected | Not connected | Not connected |
 
@@ -238,7 +251,7 @@ Nothing in this slice changed an existing entitlement. Unresolved: paid-plan AI 
 3. **Invoice tie-in through Empire** (#5), and piping quote requests into Empire.
 4. **Scheduling calendar** (#6) and **time tracking** (#8). The calendar should show vacations, handoff dates and meetups.
 5. **Crew sharing** (#7).
-6. **Google Business Profile sync** (#3) and **custom domains via CNAME**.
+6. **Google Business Profile sync** (#3) and the **portable page** (members create their page on Trade Circle and, at Starter, unlock a portable version they host under their own domain, theirs to keep forever — Trade Circle never gives or hosts domains).
 7. **Lead marketplace** (#9): 3 bids a month on free, unlimited on full, with compact previews (job type, location, requested date, photos, budget; missing information marked).
 8. **Community, remaining**: cheers economy, peer connections by trade and city, opt-in dispute threads.
 9. **YouTube auto-post**, portfolio PDF and link export, seasonal quoting tools, job costing templates.

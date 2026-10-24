@@ -47,7 +47,7 @@ Added October 23, 2026. Trade Circle is for networking, community and brand buil
 | Tier | Price | Includes |
 |---|---|---|
 | Free | $0 | Page, photo portfolio, clips, job sheet, community access, basic scheduling view, 3 lead marketplace bids per month, quote button that captures leads into the Trade Circle inbox |
-| Starter | $3 | Everything in Free, plus custom domain via CNAME, Google Business Profile sync, time tracking, YouTube auto-post |
+| Starter | $3 | Everything in Free, plus a portable page (yours to keep, host anywhere under your own domain — Trade Circle never gives or hosts domains), Google Business Profile sync, time tracking, YouTube auto-post |
 | Full | $9 | Everything in Starter, plus invoicing through Empire, crew sharing, voice onboarding, priority support, monthly profile and Google listing performance report, unlimited lead marketplace, Stripe Connect payments (card-on-file toggle, ACH option, partial payments, save card for next invoice) |
 
 New-lead alerts are a paid-plan feature: email alerts on both paid plans, and texts capped by plan,
