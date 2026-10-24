@@ -113,3 +113,21 @@ def test_reports_and_moderation(client, signup, db):
     # The author can still see it, marked hidden, and can't edit it back.
     assert client.get(f"/api/posts/{post['id']}", headers=a).json()["status"] == "hidden"
     assert client.patch(f"/api/posts/{post['id']}", headers=a, json={"title": "Edited"}).status_code == 409
+
+
+def test_starting_out_posts_publish_and_filter(client, signup):
+    a, _ = signup()
+    b, _ = signup("Second Shop", email="second@example.com")
+    res = client.post("/api/posts", headers=a, json={"kind": "starting_out", "title": "What I wish I'd known in year one", "body": "Price the job, not the fear.", "trade_tags": ["plumber"]})
+    assert res.status_code == 201 and res.json()["status"] == "published" and res.json()["kind"] == "starting_out"
+    # A supply question alongside, so the kind filter has something to separate.
+    ask(client, a)
+    lane = client.get("/api/posts", headers=b, params={"kind": "starting_out"}).json()["posts"]
+    assert [p["title"] for p in lane] == ["What I wish I'd known in year one"]
+    # The lane composes with other kinds in one filter, like every other kind.
+    assert len(client.get("/api/posts", headers=b, params={"kind": "starting_out,supply_question"}).json()["posts"]) == 2
+    # The meta endpoint offers the new kind to the apps.
+    assert "starting_out" in client.get("/api/community/meta", headers=a).json()["kinds"]
+    # It's a plain post lane: a title is required, and there are no extra fields to invent.
+    assert client.post("/api/posts", headers=a, json={"kind": "starting_out", "title": "", "body": "x"}).status_code == 422
+    assert client.post("/api/posts", headers=a, json={"kind": "starting_out", "title": "Ok", "fields": {"bogus": 1}}).status_code == 422

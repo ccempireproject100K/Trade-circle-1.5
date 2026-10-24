@@ -13,16 +13,16 @@ PLANS = {
 # Features that aren't built are listed so plan descriptions stay honest; they're never sold as working.
 FEATURES = {
     "lead_alerts": ("starter", "New-lead email alerts, and texts within your plan's daily text allowance", True),
-    "daily_summary": ("starter", "Daily email summary, and the morning rundown as a text (1 text a day on Starter, up to 2 on Full)", True),
+    "daily_summary": ("starter", "Daily email summary, and the morning rundown as a text", True),
     "time_tracking": ("starter", "Time tracking on jobs", True),
-    "custom_domain": ("starter", "Your own domain for your page (CNAME)", True),
+    "portable_page": ("starter", "Portable page — yours to keep, host anywhere under your own domain", False),
     "google_business_profile": ("starter", "Google Business Profile sync", False),
     "youtube_autopost": ("starter", "YouTube auto-posting", True),
     "customer_payments": ("full", "Take card and bank payments from customers (Stripe)", True),
     "marketplace_unlimited": ("full", "Unlimited lead marketplace bids", True),
-    "profile_report": ("full", "Monthly profile performance report", True),
-    "voice_onboarding": ("full", "Voice onboarding", True),
-    "priority_support": ("full", "Priority support", True),
+    "profile_report": ("full", "Monthly profile performance report", False),
+    "voice_onboarding": ("full", "Voice onboarding", False),
+    "priority_support": ("full", "Priority support", False),
     "empire_invoicing": ("full", "Invoicing through Empire", False),
     "crew_sharing": ("full", "Crew sharing", False),
 }

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Trade Circle — the community and work network for contractors{% endblock %}
+{% block title %}Trade Circle — the community and work network for contractors and small businesses alike{% endblock %}
 {% block meta %}
   <meta name="description" content="{{ description }}">
   <meta property="og:title" content="Trade Circle">
@@ -9,31 +9,38 @@
 {% endblock %}
 {% block body %}
 <main class="page home" style="--brand: {{ brand }}; --brand-text: {{ brand_text }};">
-  <header class="site-header">
+  <header class="site-header wood-grain">
     <span class="wordmark">Trade Circle</span>
     <nav class="site-nav">
       <a class="btn" href="/app/login">Log in</a>
       <a class="btn btn-primary" href="/app/signup">Sign up</a>
     </nav>
   </header>
+  <div class="brand-stripe" aria-hidden="true"></div>
 
   <section class="hero home-hero">
-    <h1>The community and work network for contractor small businesses</h1>
-    <p class="tagline">A public page that brings in work, handoffs and vacation coverage from people you trust, a marketplace of local jobs, and a break room full of the trades.</p>
-    <div class="actions">
-      <a class="btn btn-primary" href="/app/signup">Create your free page</a>
-      <a class="btn" href="/request">Post a job</a>
+    <img class="hero-backdrop" src="/static/img/hero.webp" alt="Cartoon illustration of a crew of five contractors from different trades standing in front of a small storefront with a sign that reads MOM &amp; POP'S" width="1920" height="1280">
+    <div class="hero-copy">
+      <h1>The community and work network for contractors and small businesses alike</h1>
+      <p class="tagline">A public page that brings in work, handoffs and vacation coverage from people you trust, a marketplace of local jobs, and a break room full of the trades.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/app/signup">Create your free page</a>
+        <a class="btn" href="/request">Post a job</a>
+      </div>
     </div>
+    <div class="brand-stripe" aria-hidden="true"></div>
   </section>
 
   <section class="card">
     <h2>What you get</h2>
+    <h3 class="feature-group">On every free page</h3>
     <ul class="feature-grid">
       <li>
         <h3>Your public page</h3>
         <p>Your story, services, licenses and insurance, a photo and video portfolio, and customer reviews — with a quote form that turns visitors into leads.</p>
       </li>
       <li>
+        <img class="feature-art" src="/static/img/handoff.webp" alt="Cartoon illustration of two contractors shaking hands in front of a yellow work van, one handing a job over to the other" width="1920" height="1280" loading="lazy">
         <h3>Handoffs &amp; vacation coverage</h3>
         <p>Booked solid, or finally taking a week off? Hand jobs to members you trust and pick up work when you're slow. Vacations lift the handoff caps.</p>
       </li>
@@ -49,30 +56,52 @@
         <h3>Pay &amp; rates, and the cost calculator</h3>
         <p>See what the trade charges around you, and price jobs with a calculator that keeps markup and margin straight.</p>
       </li>
+    </ul>
+    <h3 class="feature-group">Starter adds</h3>
+    <ul class="feature-grid">
       <li>
-        <h3>The daily rundown <span class="badge">Starter</span></h3>
+        <h3>The daily rundown</h3>
         <p>Every morning, one summary of what's new — leads, messages, follow-ups due — by email, and as a text on paid plans.</p>
       </li>
       <li>
-        <h3>Time tracking <span class="badge">Starter</span></h3>
+        <h3>Time tracking</h3>
         <p>Track time on jobs in the same place you track the work.</p>
       </li>
       <li>
-        <h3>Customer payments <span class="badge">Full</span></h3>
-        <p>Take card and bank payments from customers through Stripe, on a pay page made for the job.</p>
-      </li>
-      <li>
-        <h3>YouTube auto-posting <span class="badge">Starter</span></h3>
+        <h3>YouTube auto-posting</h3>
         <p>Connect your channel once, and the project videos you pick post to YouTube after a quick confirm.</p>
+      </li>
+    </ul>
+    <h3 class="feature-group">Full adds</h3>
+    <ul class="feature-grid">
+      <li>
+        <h3>Customer payments</h3>
+        <p>Take card and bank payments from customers through Stripe, on a pay page made for the job.</p>
       </li>
     </ul>
   </section>
 
   <section class="card">
     <h2>For homeowners</h2>
+    <img class="feature-art" src="/static/img/reviews.webp" alt="Cartoon illustration of a happy homeowner on their porch holding up a phone with a five-star review, while the contractor gives a thumbs up beside his truck" width="1920" height="1280" loading="lazy">
     <p>Post your job once, and local contractors come to you with bids. You pick who does the work — and when it's done, your review helps the next neighbor choose.</p>
     <div class="actions">
       <a class="btn btn-primary" href="/request">Post a job</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Just starting out?</h2>
+    <p>Brand new, or thinking about it? This is a good first step:</p>
+    <ul class="list">
+      <li>Your free page is your first storefront — no website needed to look established from day one.</li>
+      <li>Bid on marketplace jobs to land your first customers — the free plan includes 3 bids a month.</li>
+      <li>The community has a lane just for you — <strong>Starting Out</strong>: starter tips from people who've done it, meetups with other new owners, and experienced members who want to mentor you.</li>
+      <li>Pay &amp; rates and the cost calculator help you price your first jobs right.</li>
+      <li>Established shops hand off overflow work here — that's how new shops get fed.</li>
+    </ul>
+    <div class="actions">
+      <a class="btn btn-primary" href="/app/signup">Create your free page</a>
     </div>
   </section>
 

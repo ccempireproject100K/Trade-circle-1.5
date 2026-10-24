@@ -67,7 +67,7 @@ _INSURANCE_LABELS = {
 }
 
 
-DEFAULT_BRAND_COLOR = "#1F4E79"
+DEFAULT_BRAND_COLOR = "#4A2F1B"
 
 
 def text_color_on(hex_color: str) -> str:

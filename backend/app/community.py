@@ -2,9 +2,10 @@
 
 One collection of posts serves every community feature, told apart by `kind`:
 supply questions, supplier experiences and suggestions, project walkthroughs,
-lessons from the job, equipment experiences and questions, and meetups. They
-share comments, photos, trade tags, location, search and reporting, so each
-feature only adds the few fields that are specific to it.
+lessons from the job, equipment experiences and questions, meetups, and a
+starting-out lane for new businesses. They share comments, photos, trade tags,
+location, search and reporting, so each feature only adds the few fields that
+are specific to it.
 """
 from datetime import date
 from enum import Enum
@@ -45,6 +46,7 @@ class Kind(str, Enum):
     meetup = "meetup"
     opening = "opening"  # employment: a company hiring, never a customer project or lead
     spot = "spot"  # Break Room: a member's recommended place or deal
+    starting_out = "starting_out"  # new businesses: starter tips, new-owner meetups, mentor offers and requests
 
 
 def Text(n: int):
@@ -165,6 +167,7 @@ FIELDS = {
     Kind.meetup: MeetupFields,
     Kind.opening: OpeningFields,
     Kind.spot: SpotFields,
+    Kind.starting_out: NoFields,
 }
 
 # Kinds that only make sense with a place attached.

@@ -102,8 +102,8 @@ def test_home_page_is_the_front_door(client):
     assert res.status_code == 200
     assert res.headers["content-type"].startswith("text/html")
     html = res.text
-    assert "<title>Trade Circle — the community and work network for contractors</title>" in html
-    assert "community and work network for contractor small businesses" in html
+    assert "<title>Trade Circle — the community and work network for contractors and small businesses alike</title>" in html
+    assert "The community and work network for contractors and small businesses alike" in html
     assert '<meta name="description"' in html and 'property="og:title"' in html
     # The real ways in: member login/signup live in the dashboard app.
     assert 'href="/app/login"' in html
@@ -114,9 +114,9 @@ def test_home_page_is_the_front_door(client):
     assert 'href="/request"' in html
     # Pricing straight from tiers.py, with the text policy per plan.
     assert "$3/mo" in html and "$9/mo" in html
-    assert "one a day — your morning rundown" in html
-    assert "up to two a day" in html
-    assert "one weekly update email" in html
+    assert "No texts — a weekly update by email." in html
+    assert "You get one text a day." in html
+    assert "You get two texts a day." in html
     assert "Weekly update email" in html  # the free plan's card, from FREE_FEATURES + the weekly line
     # Only what is built: nothing from the not-built list may be promised.
     assert "Google Business Profile sync" not in html
@@ -128,6 +128,97 @@ def test_home_page_is_the_front_door(client):
     assert "© Mind At Ease Solutions" in html
     csp = res.headers["content-security-policy"]
     assert "script-src 'self'" in csp and "frame-ancestors 'none'" in csp
+
+
+def test_home_page_has_a_new_businesses_section(client):
+    # Owner addition (2026-10-23): a little section for brand-new small
+    # businesses and first-time entrepreneurs, with the audience sections
+    # (after "For homeowners", before pricing) and the free-page CTA.
+    html = client.get("/").text
+    assert "Just starting out?" in html
+    assert "your first storefront" in html
+    assert "price your first jobs right" in html
+    assert html.index("For homeowners") < html.index("Just starting out?") < html.index("Simple pricing")
+    section = html[html.index("Just starting out?"):html.index("Simple pricing")]
+    assert 'href="/app/signup"' in section and "Create your free page" in section
+    # The section names the community's Starting Out lane: starter tips,
+    # new-owner meetups, and mentors (a real post kind, not a promise).
+    assert "Starting Out" in section and "starter tips" in section and "mentor" in section
+    # Only what's built: no unbuilt promises in the section.
+    assert "Google Business Profile sync" not in section
+    assert "Invoicing through Empire" not in section
+
+
+def test_front_door_references_the_illustrations(client):
+    html = client.get("/").text
+    assert 'src="/static/img/hero.webp"' in html
+    assert 'src="/static/img/handoff.webp"' in html
+    assert 'src="/static/img/reviews.webp"' in html
+
+
+def test_platform_illustrations_are_served_as_webp(client):
+    for name in ("hero", "handoff", "reviews"):
+        res = client.get(f"/static/img/{name}.webp")
+        assert res.status_code == 200
+        assert res.headers["content-type"] == "image/webp"
+        assert "max-age=31536000" in res.headers["cache-control"]
+        # A real WebP file: RIFF container with the WEBP form type.
+        assert res.content[:4] == b"RIFF" and res.content[8:12] == b"WEBP"
+    assert client.get("/static/img/nope.webp").status_code == 404
+
+
+def test_illustration_routes_serve_the_encoded_artwork(client):
+    # What the route serves is byte-for-byte the base64 artwork on disk —
+    # the green-free redraws swapped in for the final Slice 16 palette.
+    import base64
+    from pathlib import Path
+
+    img_dir = Path(__file__).resolve().parent.parent / "app" / "static" / "img"
+    for name in ("hero", "handoff", "reviews"):
+        expected = base64.b64decode((img_dir / f"{name}.webp.b64").read_bytes())
+        res = client.get(f"/static/img/{name}.webp")
+        assert res.status_code == 200
+        assert res.content == expected
+
+
+def test_home_page_groups_features_by_plan(client):
+    # Owner ruling (2026-10-23): the Free/Starter/Full labels were scattered
+    # through the page as per-feature badges. Now "What you get" is three
+    # headed groups in plan order, and the heading carries the tier.
+    html = client.get("/").text
+    free_at = html.index("On every free page")
+    starter_at = html.index("Starter adds")
+    full_at = html.index("Full adds")
+    assert free_at < starter_at < full_at
+    # No scattered tier badges on the feature cards anymore.
+    assert '<span class="badge">Starter</span>' not in html
+    assert '<span class="badge">Full</span>' not in html
+    # Every feature sits under its own group, exactly where its plan puts it.
+    assert free_at < html.index("Your public page") < starter_at
+    assert free_at < html.index("Handoffs &amp; vacation coverage") < starter_at
+    assert starter_at < html.index("The daily rundown") < full_at
+    assert starter_at < html.index("Time tracking") < full_at
+    assert starter_at < html.index("YouTube auto-posting") < full_at
+    assert full_at < html.index("Customer payments")
+    # Each pricing card states only its own text allowance (owner's words):
+    # the Starter card must not talk about what Full gets, and vice versa.
+    assert "No texts — a weekly update by email." in html
+    assert "You get one text a day." in html
+    assert "You get two texts a day." in html
+    assert "1 text a day on Starter" not in html
+    assert "up to 2 on Full" not in html
+
+
+def test_home_page_uses_the_final_tagline(client):
+    # Owner's exact words (2026-10-23): the front door's title reads
+    # "the community and work network for contractors and small businesses alike".
+    html = client.get("/").text
+    assert "<title>Trade Circle — the community and work network for contractors and small businesses alike</title>" in html
+    assert "<h1>The community and work network for contractors and small businesses alike</h1>" in html
+    # The crew picture is the hero's faded backdrop, behind the words and
+    # both calls to action — not a side-by-side image anymore.
+    assert 'class="hero-backdrop"' in html
+    assert 'class="hero-art"' not in html
 
 
 def test_home_page_with_everything_configured(db, tmp_path):

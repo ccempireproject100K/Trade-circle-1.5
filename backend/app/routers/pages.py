@@ -1,8 +1,9 @@
 """Server-rendered public pages: fast on phones and readable by search engines."""
+import base64
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from ..deps import get_db, today
@@ -97,23 +98,47 @@ async def _render(request: Request, db, slug: str, layer: str) -> HTMLResponse:
     return response
 
 
+# --- platform illustrations -------------------------------------------------
+# The channel that mirrors this repo to GitHub can only carry text, so the
+# cartoon illustrations are stored as base64 text under static/img/ and
+# decoded here. This router is included before the /static mount, so these
+# paths are served by this route rather than as files.
+_IMG_DIR = Path(__file__).resolve().parent.parent / "static" / "img"
+_IMG_CACHE: dict[str, bytes] = {}
+
+
+@router.get("/static/img/{name}.webp", include_in_schema=False)
+async def platform_illustration(name: str):
+    if name not in _IMG_CACHE:
+        encoded = _IMG_DIR / f"{name}.webp.b64"
+        if not encoded.is_file():
+            raise HTTPException(status_code=404)
+        _IMG_CACHE[name] = base64.b64decode(encoded.read_bytes())
+    response = Response(content=_IMG_CACHE[name], media_type="image/webp")
+    response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return response
+
+
 # --- the front door -------------------------------------------------------
 # Pricing on this page is rendered from tiers.py, the same table every feature
 # gate reads, so the front door can only promise what is actually built.
 HOME_DESCRIPTION = (
-    "Trade Circle is the community and work network for contractor small businesses: "
-    "a free public page and quote form, leads, handoffs and vacation coverage, a "
-    "homeowner marketplace, and a community of people in the trades."
+    "Trade Circle is the community and work network for contractors and small "
+    "businesses alike: a free public page and quote form, leads, handoffs and "
+    "vacation coverage, a homeowner marketplace, and a community of people in "
+    "the trades."
 )
 _PLAN_INTRO = {
     "free": "Everything you need to be found and to plug into the community.",
     "starter": "Everything in Free, plus:",
     "full": "Everything in Starter, plus:",
 }
+# Each plan's card states only its own text allowance — never another plan's
+# (owner ruling 2026-10-23).
 _TEXT_POLICY = {
-    "free": "No texts — one weekly update email instead, only when there's something new.",
-    "starter": "Texts: one a day — your morning rundown.",
-    "full": "Texts: up to two a day — the rundown, plus one more.",
+    "free": "No texts — a weekly update by email.",
+    "starter": "You get one text a day.",
+    "full": "You get two texts a day.",
 }
 
 

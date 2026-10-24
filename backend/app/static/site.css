@@ -1,11 +1,16 @@
 /* Trade Circle public pages. Mobile-first; widens to a centered column on larger screens. */
 :root {
-  --bg: #f4f5f7;
-  --card: #ffffff;
-  --text: #16181d;
-  --muted: #5d6470;
-  --line: #dfe2e7;
-  --ok: #1d7a46;
+  --bg: #faf3e3;
+  --card: #fffdf6;
+  --text: #33241a;
+  --muted: #77644f;
+  --line: #e3d3ae;
+  --brown: #4a2f1b;
+  --brown-dark: #3a2413;
+  --gold: #f2c230;
+  --yellow: #ffb800;
+  --hero-band: #ffb800;
+  --ok: #4a2f1b;
   --warn: #9a5b00;
   --bad: #b3261e;
   --radius: 14px;
@@ -13,12 +18,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #111317;
-    --card: #1b1e24;
-    --text: #eef0f3;
-    --muted: #a3a9b4;
-    --line: #2c3038;
-    --ok: #4cc37f;
+    --bg: #241a10;
+    --card: #33241a;
+    --text: #f7efdb;
+    --muted: #c4ab84;
+    --line: #57432c;
+    --brown: #d9a45b;
+    --brown-dark: #b57f3e;
+    --ok: #d9a45b;
     --warn: #e5a73b;
     --bad: #f07b72;
   }
@@ -222,11 +229,76 @@ a { color: inherit; }
 .bid form { margin-top: 8px; display: flex; }
 
 /* --- front door (home page) --- */
-.site-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0 2px; }
+/* Dark wood grain, shared by the site header and the brand stripe: plank
+   tones in dark browns with darker streak lines running along the grain. */
+.wood-grain {
+  background-image:
+    repeating-linear-gradient(93deg, rgba(0, 0, 0, 0.20) 0 2px, transparent 2px 29px),
+    repeating-linear-gradient(93deg, rgba(255, 243, 214, 0.06) 0 1px, transparent 1px 19px),
+    repeating-linear-gradient(93deg, #3e2716 0 46px, #4a2f1b 46px 92px, #46311e 92px 138px, #3a2413 138px 184px);
+}
+.site-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 14px 12px;
+  color: #fff3d6;
+  border-radius: 0 0 10px 10px;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 243, 214, 0.25);
+}
 .wordmark { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em; }
 .site-nav { display: flex; gap: 8px; }
 .site-nav .btn { flex: none; min-height: 44px; padding: 0 18px; }
+/* On the wood header the nav buttons are work yellow with brown text. */
+.site-header .btn { background: var(--yellow); color: #33241a; border-color: rgba(0, 0, 0, 0.25); }
 .home-hero h1 { font-size: 2rem; }
+
+/* The brand stripe: a dark wood-grain band over a thin gold line. One class,
+   reused under the site header and at the front-door hero's foot. The grain
+   layers are sized to the top 8px; the gold shows through underneath. */
+.brand-stripe {
+  height: 11px;
+  background-color: var(--gold);
+  background-image:
+    repeating-linear-gradient(93deg, rgba(0, 0, 0, 0.22) 0 2px, transparent 2px 23px),
+    repeating-linear-gradient(93deg, rgba(255, 243, 214, 0.06) 0 1px, transparent 1px 15px),
+    repeating-linear-gradient(93deg, #3e2716 0 18px, #4a2f1b 18px 36px, #46311e 36px 54px, #3a2413 54px 72px);
+  background-size: 100% 8px;
+  background-repeat: repeat-x;
+  background-position: top left;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+/* The front-door hero is a bold work-yellow band with dark brown text,
+   whatever the platform brand color is doing elsewhere on the page. The
+   crew illustration sits inside it as a faded backdrop, behind the words
+   and both call-to-action buttons; the copy layer rides above it. */
+.home-hero { position: relative; overflow: hidden; background: var(--hero-band); color: var(--text); }
+.hero-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  opacity: 0.22;
+  pointer-events: none;
+}
+.home-hero .hero-copy { position: relative; z-index: 1; }
+.home-hero .brand-stripe { position: relative; z-index: 1; margin: 24px -20px -24px; }
+@media (min-width: 720px) {
+  .home-hero .brand-stripe { border-radius: 0 0 var(--radius) var(--radius); }
+}
+/* The feature illustrations are light decoration, never the main event:
+   small thumbnail spots inside their cards. */
+.feature-art {
+  display: block;
+  width: 112px;
+  height: auto;
+  border-radius: 10px;
+  margin: 0 0 10px;
+}
+/* The "What you get" grid is grouped by plan; the group heading carries the
+   tier, so features need no per-card plan badges. */
+.feature-group { margin: 20px 0 10px; font-size: 1.12rem; }
+.feature-group:first-of-type { margin-top: 8px; }
 .feature-grid { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
 .feature-grid h3 { margin: 0 0 4px; font-size: 1.02rem; }
 .feature-grid h3 .badge { margin-left: 6px; vertical-align: 2px; }
