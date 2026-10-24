@@ -146,6 +146,27 @@ async def _member(db, user_id: str) -> dict:
     return {"slug": profile["slug"], "business_name": profile["business_name"]}
 
 
+async def _attach_cheer_prompts(db, views: list, handoffs: list, viewer_id: str) -> None:
+    """Cheer prompt data on completed handoffs: the sender gets a one-tap thank-you for their cover.
+
+    A completed handoff the sender hasn't cheered yet carries `cheer_prompt`
+    (who to thank); once they've sent it, the view carries `cheer_sent` instead.
+    """
+    targets = [h for h in handoffs if h["status"] == "completed" and h["sender_id"] == viewer_id]
+    if not targets:
+        return
+    cheered = {c["handoff_id"] async for c in db.cheers.find({"handoff_id": {"$in": [h["_id"] for h in targets]}}, {"handoff_id": 1})}
+    by_id = {h["_id"]: h for h in targets}
+    for view in views:
+        h = by_id.get(view["id"])
+        if h is None:
+            continue
+        if h["_id"] in cheered:
+            view["cheer_sent"] = True
+        else:
+            view["cheer_prompt"] = {"to": h["recipient"]}
+
+
 @router.get("/handoffs/allowance")
 async def get_allowance(request: Request, user: dict = Depends(current_user), db=Depends(get_db)):
     return await rules.allowance(db, user["_id"], today(request), _settings(request).timezone)
@@ -154,7 +175,9 @@ async def get_allowance(request: Request, user: dict = Depends(current_user), db
 @router.get("/handoffs")
 async def list_handoffs(user: dict = Depends(current_user), db=Depends(get_db)):
     found = await db.handoffs.find({"$or": [{"sender_id": user["_id"]}, {"recipient_id": user["_id"]}]}).sort("proposed_at", -1).to_list(500)
-    return [_view(h, user["_id"]) for h in found]
+    views = [_view(h, user["_id"]) for h in found]
+    await _attach_cheer_prompts(db, views, found, user["_id"])
+    return views
 
 
 @router.post("/handoffs", status_code=status.HTTP_201_CREATED)

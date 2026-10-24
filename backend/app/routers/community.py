@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
 from pydantic import Field
 
+from .. import cheers as cheers_svc
 from .. import geo, photos, videos
 from ..community import (
     DRAFTABLE,
@@ -113,6 +114,11 @@ async def authors(db, ids) -> dict:
     found = {}
     async for p in db.profiles.find({"owner_id": {"$in": list(set(ids))}}, {"owner_id": 1, "slug": 1, "business_name": 1, "trade": 1, "city": 1}):
         found[p["owner_id"]] = {"slug": p["slug"], "business_name": p["business_name"], "trade": p["trade"], "city": p["city"]}
+    if found:
+        # Banked cheers (lifetime earned) ride along as a small badge of standing — never a ranking.
+        banked = await cheers_svc.banked_for(db, list(found))
+        for owner_id, entry in found.items():
+            entry["banked"] = banked.get(owner_id, 0)
     return found
 
 
@@ -158,6 +164,10 @@ def post_view(post: dict, author: dict | None, supplier: dict | None, viewer_id:
 async def shape(db, posts: list, viewer_id: str | None, center: dict | None = None) -> list:
     who = await authors(db, [p["author_id"] for p in posts])
     sup = await suppliers_by_id(db, [p.get("supplier_id") for p in posts])
+    cheer_counts: dict = {}
+    if posts:
+        async for c in db.cheers.find({"post_id": {"$in": [p["_id"] for p in posts]}}, {"post_id": 1}):
+            cheer_counts[c["post_id"]] = cheer_counts.get(c["post_id"], 0) + 1
     meetups = [p["_id"] for p in posts if p["kind"] == Kind.meetup.value]
     rsvps: dict = {}
     if meetups:
@@ -170,6 +180,7 @@ async def shape(db, posts: list, viewer_id: str | None, center: dict | None = No
     for p in posts:
         distance = geo.miles(center, p["location"]) if center and p.get("location", {}).get("lat") is not None else None
         view = post_view(p, who.get(p["author_id"]), sup.get(p.get("supplier_id")), viewer_id, distance)
+        view["cheers"] = cheer_counts.get(p["_id"], 0)
         if "meetup" in view:
             view["meetup"]["rsvp"] = rsvps.get(p["_id"], {"going": 0, "maybe": 0, "not_going": 0, "mine": None})
         out.append(view)
