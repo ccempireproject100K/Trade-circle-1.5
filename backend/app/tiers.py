@@ -52,6 +52,23 @@ def sms_budget(user: dict) -> int:
     return SMS_DAILY_BUDGET.get(user.get("tier", "free"), 0)
 
 
+# Cheers (see app/cheers.py): the monthly plan deposit is the economy's only
+# mint. It lands on the member's plan cycle date and stacks in the allowance
+# wallet up to the plan cap; at the cap, refills pause until they spend down.
+# Free members get no allowance — they hold only what other members give
+# them, and give it on by pass-through or from their own banked cheers.
+CHEERS_MONTHLY = {"free": 0, "starter": 30, "full": 90}
+CHEERS_WALLET_CAP = {"free": 0, "starter": 100, "full": 200}
+
+
+def cheers_monthly(user: dict) -> int:
+    return CHEERS_MONTHLY.get(user.get("tier", "free"), 0)
+
+
+def cheers_cap(user: dict) -> int:
+    return CHEERS_WALLET_CAP.get(user.get("tier", "free"), 0)
+
+
 def has_tier(user: dict, tier: str) -> bool:
     return TIER_ORDER.get(user.get("tier", "free"), 0) >= TIER_ORDER[tier]
 

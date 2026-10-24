@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
+from ..cheers import banked_count
 from ..deps import get_db, now, partial_update, public_doc, today
 from ..models import TRADES, InsuranceIn, ProfileUpdate
 from ..profiles import SECTIONS, full_view, landing_view, reflow_layout
@@ -101,6 +102,7 @@ async def public_landing(slug: str, request: Request, db=Depends(get_db)):
     portfolio = await portfolio_for(db, profile["owner_id"])
     page = landing_view(profile, portfolio, today(request), request.app.state.settings.recert_banner_days)
     page["reviews"] = await summary_for(db, profile["owner_id"], latest=3)
+    page["cheers_banked"] = await banked_count(db, profile["owner_id"])
     return page
 
 
@@ -112,4 +114,5 @@ async def public_full(slug: str, request: Request, db=Depends(get_db)):
     page = full_view(profile, portfolio, today(request), request.app.state.settings.recert_banner_days, projects)
     page["team"] = await team_on_profile(db, profile["owner_id"])
     page["reviews"] = await summary_for(db, profile["owner_id"], latest=10)
+    page["cheers_banked"] = await banked_count(db, profile["owner_id"])
     return page

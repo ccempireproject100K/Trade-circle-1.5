@@ -48,9 +48,10 @@
 {% macro stars(n) %}<span class="stars" role="img" aria-label="{{ n }} of 5 stars">{{ "★" * n }}{{ "☆" * (5 - n) }}</span>{% endmacro %}
 
 {% macro reviews_section(p) %}
-  {% if p.reviews and p.reviews.count %}
+  {% if (p.reviews and p.reviews.count) or p.cheers_banked %}
   <section class="card">
-    <h2>Reviews</h2>
+    <h2>{{ "Reviews" if p.reviews and p.reviews.count else "Cheers" }}</h2>
+    {% if p.reviews and p.reviews.count %}
     <p class="review-summary">{{ stars((p.reviews.average | round) | int) }} <strong>{{ p.reviews.average }}</strong> · {{ p.reviews.count }} review{{ "s" if p.reviews.count != 1 }}</p>
     <ul class="list">
       {% for r in p.reviews.latest %}
@@ -67,6 +68,10 @@
         </li>
       {% endfor %}
     </ul>
+    {% endif %}
+    {% if p.cheers_banked %}
+    <p class="review-summary">🎉 <strong>{{ p.cheers_banked }}</strong> banked cheer{{ "s" if p.cheers_banked != 1 }} <span class="muted">— earned from other members, one thank-you at a time</span></p>
+    {% endif %}
   </section>
   {% endif %}
 {% endmacro %}
