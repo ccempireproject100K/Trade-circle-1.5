@@ -13,6 +13,7 @@ export default function Home() {
   const { user, profile } = useAuth();
   const [leads, setLeads] = useState(null);
   const [jobs, setJobs] = useState(null);
+  const [cheers, setCheers] = useState(null);
   const [handoffsWaiting, setHandoffsWaiting] = useState(0);
   const [activity, setActivity] = useState(null);
   const [marketplace, setMarketplace] = useState(null);
@@ -29,6 +30,7 @@ export default function Home() {
       })
       .catch((err) => setError(err.message));
     api("/notifications").then(setActivity).catch(() => {});
+    api("/cheers/me").then(setCheers).catch(() => {});
     api("/handoffs")
       .then((list) => setHandoffsWaiting(list.filter((h) => h.direction === "incoming" && h.status === "proposed").length))
       .catch(() => {});
@@ -69,6 +71,12 @@ export default function Home() {
       {handoffsWaiting > 0 && (
         <Link className="notice notice-ok" to="/handoffs" style={{ display: "block", marginBottom: 16, textDecoration: "none" }}>
           {handoffsWaiting} {handoffsWaiting === 1 ? "member is" : "members are"} asking you to cover a job. Review →
+        </Link>
+      )}
+
+      {cheers && cheers.waiting > 0 && (
+        <Link className="notice notice-ok" to="/community" style={{ display: "block", marginBottom: 16, textDecoration: "none" }}>
+          🎉 {cheers.waiting} {cheers.waiting === 1 ? "cheer is" : "cheers are"} waiting for you — send a cheer to collect {cheers.waiting === 1 ? "it" : "them"}.
         </Link>
       )}
 
@@ -176,6 +184,19 @@ export default function Home() {
             <p className="muted" style={{ margin: 0 }}>No scheduled jobs. <Link to="/jobs">Add one</Link></p>
           )}
         </section>
+
+        {cheers && (
+          <section className="card home-cheers">
+            <div className="row-between">
+              <h2 style={{ margin: 0 }}>Cheers</h2>
+              <Link className="small" to="/profile">Your cheers →</Link>
+            </div>
+            <p className="muted" style={{ margin: 0 }}>
+              Allowance {cheers.allowance} · Bank {cheers.bank} · Banked {cheers.banked} · Waiting {cheers.waiting} · Given {cheers.given}
+            </p>
+            <p className="small muted" style={{ margin: 0 }}>A cheer you receive lands when you pass one on — that&apos;s the circle.</p>
+          </section>
+        )}
 
         <section className="card home-plan">
           <div className="row-between">

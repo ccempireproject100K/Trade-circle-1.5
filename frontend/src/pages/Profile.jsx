@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, label } from "../api.js";
 import { useAuth } from "../auth.jsx";
+import { CheersPanel } from "../components/Cheers.jsx";
 import { Field, Notice } from "../components/Form.jsx";
 import SortableList from "../components/SortableList.jsx";
 
@@ -204,6 +205,8 @@ export default function Profile() {
         </label>
         <Notice error={status.error} ok={status.ok} />
       </section>
+
+      <CheersPanel />
 
       <DetailsForm profile={profile} trades={meta.trades} onSaved={setProfile} />
 

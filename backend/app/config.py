@@ -25,6 +25,11 @@ class Settings:
     timezone: str = "America/Chicago"
     # Footer link to the Academy; omitted from pages until set.
     academy_url: str | None = None
+    # The operating entity named on the legal pages (/privacy, /terms). The
+    # contact email and mailing address render on those pages only when set.
+    legal_entity: str = "Mind At Ease Solutions"
+    legal_email: str = ""
+    legal_address: str = ""
     # Public address of this site, used for links in text messages.
     public_url: str = "https://tradecircle.mindateasesolutions.com"
     # Twilio. Same variable names as the Mind At Ease site, so both can share one account.
@@ -104,6 +109,9 @@ def load_settings() -> Settings:
         enforce_https=_flag("TC_ENFORCE_HTTPS", True),
         trust_proxy=_flag("TC_TRUST_PROXY", False),
         academy_url=os.environ.get("TC_ACADEMY_URL") or None,
+        legal_entity=os.environ.get("TC_LEGAL_ENTITY") or Settings.legal_entity,
+        legal_email=os.environ.get("TC_LEGAL_EMAIL", ""),
+        legal_address=os.environ.get("TC_LEGAL_ADDRESS", ""),
         public_url=os.environ.get("TC_PUBLIC_URL", Settings.public_url).rstrip("/"),
         twilio_account_sid=os.environ.get("TWILIO_ACCOUNT_SID", ""),
         twilio_auth_token=os.environ.get("TWILIO_AUTH_TOKEN", ""),

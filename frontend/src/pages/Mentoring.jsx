@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, label } from "../api.js";
+import { CheerButton } from "../components/Cheers.jsx";
 import { Author } from "../components/Community.jsx";
 import { Field, Notice } from "../components/Form.jsx";
 import MessageRequest from "../components/MessageRequest.jsx";
@@ -141,7 +142,10 @@ export default function Mentoring() {
               {p.experience && <p className="small" style={{ margin: 0 }}>{p.experience}</p>}
               {p.availability && <p className="small muted" style={{ margin: 0 }}>Availability: {p.availability}</p>}
               <p className="small muted" style={{ margin: 0 }}>Prefers: {p.prefers}</p>
-              <MessageRequest member={p.member} context="mentoring" buttonLabel="Ask for an introduction" />
+              <div className="row">
+                <MessageRequest member={p.member} context="mentoring" buttonLabel="Ask for an introduction" />
+                <CheerButton toSlug={p.member.slug} />
+              </div>
             </li>
           ))}
         </ul>

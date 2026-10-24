@@ -13,6 +13,7 @@ from datetime import timedelta
 
 import httpx
 
+from .cheers import apply_refills
 from .deps import now
 from .digest import DIGEST_HOUR, FOLLOW_UP_TEXT_HOUR, local_now, send_daily, send_follow_up_texts, send_weekly
 from . import youtube as youtube_jobs
@@ -165,11 +166,15 @@ async def run_forever(db, settings) -> None:
         log.info("YouTube posting is on; up to %s uploads a day", settings.youtube_daily_uploads)
     if sms is None and email is None and not settings.youtube_ready:
         return
-    summarized_on = texted_on = weeklied_on = None
+    summarized_on = texted_on = weeklied_on = refilled_on = None
     try:
         while True:
             try:
                 here = local_now(settings)
+                if refilled_on != here.date():
+                    # The cheers monthly top-up sweep (per-member plan cycle dates).
+                    await apply_refills(db, here.date())
+                    refilled_on = here.date()
                 if email is not None and summarized_on != here.date() and here.hour >= DIGEST_HOUR:
                     await send_daily(db, settings, here)
                     summarized_on = here.date()
